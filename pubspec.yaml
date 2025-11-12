@@ -1,0 +1,76 @@
+name: passora
+description: "Secure password manager for everyone"
+publish_to: 'none'
+version: 1.1.1+4
+
+environment:
+  sdk: ^3.8.1
+  flutter: ">=3.22.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  
+  # State Management
+  flutter_bloc: ^8.1.6
+  equatable: ^2.0.5
+  
+  # Local Storage & Security
+  sqflite: ^2.3.3+1
+  sqflite_common_ffi: ^2.3.3
+  crypto: ^3.0.3
+  encrypt: ^5.0.3
+  path_provider: ^2.1.4
+  path: ^1.9.0
+  
+  # Dependency Injection
+  get_it: ^7.7.0
+  injectable: ^2.4.2
+  
+  # UI
+  flutter_svg: ^2.0.10+1
+  
+  # Localization
+  easy_localization: ^3.0.7
+  google_fonts: ^6.2.1
+  flutter_animate: ^4.5.0
+  
+  # Utilities
+  uuid: ^4.4.0
+  intl: ^0.20.2
+  share_plus: 12.0.1
+  url_launcher: ^6.2.6
+  csv: ^6.0.0
+  file_picker: ^8.1.4
+  
+  # Network (for future sync features)
+  dio: ^5.4.3+1
+  
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  flutter_launcher_icons: ^0.13.1
+  
+  # Code Generation
+  build_runner: ^2.4.12
+  json_annotation: ^4.9.0
+  json_serializable: ^6.8.0
+  
+  # Testing
+  mocktail: ^1.0.3
+
+flutter:
+  uses-material-design: true
+  
+  assets:
+    - assets/images/
+    - assets/translations/
+    - assets/icons/
+    - assets/animations/
+
+flutter_icons:
+  android: true
+  ios: false
+  image_path: "assets/icons/app_icon.png"
+  min_sdk_android: 21
