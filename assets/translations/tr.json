@@ -175,5 +175,6 @@
   "expiry_date": "Son Kullanma Tarihi",
   "cvv": "CVV",
   "iban_numbers": "IBAN Numaraları",
-  "add_iban": "IBAN Ekle"
+  "add_iban": "IBAN Ekle",
+  "banking_category_cannot_be_deleted": "Bankacılık kategorisi silinemez. Bu kategori bankacılık bilgilerinizi saklamak için gereklidir."
 }

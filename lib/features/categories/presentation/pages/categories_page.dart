@@ -25,8 +25,29 @@ class _CategoriesPageState extends State<CategoriesPage> {
       appBar: AppBar(
         title: Text('categories'.tr()),
       ),
-      body: BlocBuilder<CategoriesCubit, CategoriesState>(
-        builder: (context, state) {
+      body: BlocListener<CategoriesCubit, CategoriesState>(
+        listener: (context, state) {
+          if (state is CategoriesError) {
+            // Show error message as SnackBar
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.message.tr()),
+                backgroundColor: Colors.red,
+                duration: const Duration(seconds: 3),
+              ),
+            );
+          } else if (state is CategoryDeleted) {
+            // Show success message
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('category_deleted'.tr()),
+                backgroundColor: Colors.green,
+              ),
+            );
+          }
+        },
+        child: BlocBuilder<CategoriesCubit, CategoriesState>(
+          builder: (context, state) {
           if (state is CategoriesLoading) {
             return const Center(child: CircularProgressIndicator());
           }
@@ -102,6 +123,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
           
           return const SizedBox.shrink();
         },
+        ),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
@@ -184,28 +206,36 @@ class _CategoriesPageState extends State<CategoriesPage> {
                       break;
                   }
                 },
-                itemBuilder: (context) => [
-                  const PopupMenuItem(
-                    value: 'edit',
-                    child: Row(
-                      children: [
-                        Icon(Icons.edit, size: 20),
-                        SizedBox(width: 8),
-                        Text('Edit'),
-                      ],
+                itemBuilder: (context) {
+                  // Check if this is Banking category
+                  final isBanking = category.name.toLowerCase() == 'bankacılık' || 
+                                   category.name.toLowerCase() == 'banking';
+                  
+                  return [
+                    const PopupMenuItem(
+                      value: 'edit',
+                      child: Row(
+                        children: [
+                          Icon(Icons.edit, size: 20),
+                          SizedBox(width: 8),
+                          Text('Edit'),
+                        ],
+                      ),
                     ),
-                  ),
-                  PopupMenuItem(
-                    value: 'delete',
-                    child: Row(
-                      children: [
-                        Icon(Icons.delete, size: 20, color: Colors.red),
-                        SizedBox(width: 8),
-                        Text('delete_category'.tr(), style: TextStyle(color: Colors.red)),
-                      ],
-                    ),
-                  ),
-                ],
+                    // Only show delete option if not Banking category
+                    if (!isBanking)
+                      PopupMenuItem(
+                        value: 'delete',
+                        child: Row(
+                          children: [
+                            Icon(Icons.delete, size: 20, color: Colors.red),
+                            SizedBox(width: 8),
+                            Text('delete_category'.tr(), style: TextStyle(color: Colors.red)),
+                          ],
+                        ),
+                      ),
+                  ];
+                },
                 child: const Icon(Icons.more_vert, color: Colors.grey),
               ),
       ),
@@ -226,6 +256,18 @@ class _CategoriesPageState extends State<CategoriesPage> {
   }
 
   Future<void> _onDeleteCategory(CategoryModel category) async {
+    // Extra protection: prevent deleting Banking category
+    if (category.name.toLowerCase() == 'bankacılık' || 
+        category.name.toLowerCase() == 'banking') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('banking_category_cannot_be_deleted'.tr()),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+    
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(

@@ -97,6 +97,13 @@ class _AddPasswordPageState extends State<AddPasswordPage> {
                 _selectedCategory = _categories.firstWhere(
                   (cat) => cat.id == widget.editingPassword!.categoryId,
                 );
+                // Check if the category is banking to show banking fields
+                _isBankingCategory = _selectedCategory?.name == 'Bankacılık';
+                
+                // If banking category and no IBAN controllers, add at least one
+                if (_isBankingCategory && _ibanControllers.isEmpty) {
+                  _ibanControllers.add(TextEditingController());
+                }
               } catch (e) {
                 _selectedCategory = null; // Category not found
               }

@@ -56,6 +56,18 @@ class PasswordModel {
   // Create from Map for SQLite
   static PasswordModel fromMap(Map<String, dynamic> map) {
     final ibanString = map['ibanNumbers'] as String?;
+    
+    // Debug log to check banking fields
+    if (map['cardHolderName'] != null || map['cardNumber'] != null || 
+        map['ibanNumbers'] != null || map['expiryDate'] != null || map['cvv'] != null) {
+      print('📋 Loading password "${map['title']}" with banking data:');
+      print('  - Card Holder: ${map['cardHolderName']}');
+      print('  - Card Number: ${map['cardNumber']}');
+      print('  - IBAN String: ${map['ibanNumbers']}');
+      print('  - Expiry: ${map['expiryDate']}');
+      print('  - CVV: ${map['cvv']}');
+    }
+    
     return PasswordModel(
       id: map['id'] as int?,
       title: map['title'] as String,

@@ -174,7 +174,7 @@ class _SplashPageState extends State<SplashPage> {
                   strokeWidth: 3,
                 ),
               )
-                  .animate(delay: 600.ms)
+                  .animate(delay: 400.ms)
                   .fadeIn(
                     duration: AppConstants.animationDuration,
                   ),

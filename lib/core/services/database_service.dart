@@ -576,7 +576,24 @@ class DatabaseService {
         categoryId: password.categoryId,
         createdAt: password.createdAt,
         updatedAt: DateTime.now(),
+        // Include banking fields
+        cardHolderName: password.cardHolderName,
+        cardNumber: password.cardNumber,
+        ibanNumbers: password.ibanNumbers,
+        expiryDate: password.expiryDate,
+        cvv: password.cvv,
       );
+      
+      // Debug log for banking data
+      if (password.cardHolderName != null || password.cardNumber != null || 
+          password.ibanNumbers != null || password.expiryDate != null || password.cvv != null) {
+        print('💾 Saving password "${password.title}" with banking data:');
+        print('  - Card Holder: ${password.cardHolderName}');
+        print('  - Card Number: ${password.cardNumber}');
+        print('  - IBANs: ${password.ibanNumbers}');
+        print('  - Expiry: ${password.expiryDate}');
+        print('  - CVV: ${password.cvv}');
+      }
       
       if (password.id == null) {
         // Insert new password
@@ -1097,15 +1114,20 @@ class DatabaseService {
   Future<void> deleteCategory(int id) async {
     await initialize();
     try {
-      // Check if category is default
+      // Check if category is Banking (protected category)
       final category = await _database!.query(
         'categories',
         where: 'id = ?',
         whereArgs: [id],
       );
 
-      if (category.isNotEmpty && category.first['isDefault'] == 1) {
-        throw Exception('Cannot delete default category');
+      if (category.isNotEmpty) {
+        final categoryName = category.first['name'] as String;
+        // Protect Banking category from deletion
+        if (categoryName.toLowerCase() == 'bankacılık' || 
+            categoryName.toLowerCase() == 'banking') {
+          throw Exception('banking_category_cannot_be_deleted');
+        }
       }
 
       // Update passwords that use this category to null

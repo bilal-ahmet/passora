@@ -176,5 +176,6 @@
   "biometric_not_available": "Biometric authentication is not available on this device",
   "verify_identity_biometric": "Verify your identity to enable biometric authentication",
   "biometric_auth_failed": "Biometric authentication failed",
-  "failed_to_save_settings": "Failed to save settings"
+  "failed_to_save_settings": "Failed to save settings",
+  "banking_category_cannot_be_deleted": "Banking category cannot be deleted. This category is required for storing your banking information."
 }

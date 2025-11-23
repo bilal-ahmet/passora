@@ -60,7 +60,15 @@ class CategoriesCubit extends Cubit<CategoriesState> {
       emit(CategoryDeleted());
       await loadCategories(); // Reload categories
     } catch (e) {
-      emit(CategoriesError(e.toString()));
+      // Extract just the error message without "Exception: " prefix
+      String errorMessage = e.toString();
+      if (errorMessage.startsWith('Exception: ')) {
+        errorMessage = errorMessage.substring('Exception: '.length);
+      }
+      if (errorMessage.startsWith('Failed to delete category: Exception: ')) {
+        errorMessage = errorMessage.substring('Failed to delete category: Exception: '.length);
+      }
+      emit(CategoriesError(errorMessage));
     }
   }
 
