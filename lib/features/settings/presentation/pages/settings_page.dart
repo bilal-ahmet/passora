@@ -8,6 +8,7 @@ import '../../../../core/services/database_service.dart';
 import '../../../../core/services/csv_import_service.dart';
 import '../../../auth/presentation/pages/change_password_page.dart';
 import '../../../passwords/data/models/password_model.dart';
+import '../../../passwords/presentation/cubit/passwords_cubit.dart';
 import '../cubit/theme_cubit.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:file_picker/file_picker.dart';
@@ -25,6 +26,7 @@ class _SettingsPageState extends State<SettingsPage> {
   int _autoLockDuration = 5; // minutes
   bool _isMasterPasswordEnabled = true;
   bool _isLoading = true;
+  bool _dataImported = false; // Track if data was imported
 
   @override
   void initState() {
@@ -145,13 +147,31 @@ class _SettingsPageState extends State<SettingsPage> {
       );
     }
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('settings'.tr()),
-        elevation: 0,
-        backgroundColor: Colors.transparent,
-      ),
-      body: SingleChildScrollView(
+    return PopScope(
+      canPop: true,
+      onPopInvoked: (didPop) {
+        if (didPop && _dataImported) {
+          // Return flag that data was imported
+          Future.microtask(() {
+            if (mounted && Navigator.canPop(context)) {
+              // Already popped, but we can try to communicate via other means
+            }
+          });
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text('settings'.tr()),
+          elevation: 0,
+          backgroundColor: Colors.transparent,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () {
+              Navigator.pop(context, _dataImported ? 'imported' : null);
+            },
+          ),
+        ),
+        body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -254,6 +274,7 @@ class _SettingsPageState extends State<SettingsPage> {
           ],
         ),
       ),
+      ), // Close PopScope
     );
   }
 
@@ -450,8 +471,51 @@ class _SettingsPageState extends State<SettingsPage> {
       showDialog(
         context: context,
         barrierDismissible: false,
-        builder: (context) => const Center(
-          child: CircularProgressIndicator(),
+        builder: (context) => Dialog(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          child: Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surface,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SizedBox(
+                  width: 48,
+                  height: 48,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 3,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  'reading_file'.tr(),
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'please_wait'.tr(),
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: AppColors.grey600,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ).animate().fadeIn(duration: 200.ms).scale(begin: const Offset(0.8, 0.8)),
         ),
       );
 
@@ -486,8 +550,9 @@ class _SettingsPageState extends State<SettingsPage> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('import_failed'.tr()),
+          content: Text('${'import_failed'.tr()}: ${e.toString()}'),
           backgroundColor: AppColors.error,
+          duration: const Duration(seconds: 5),
         ),
       );
     }
@@ -580,18 +645,51 @@ class _SettingsPageState extends State<SettingsPage> {
       showDialog(
         context: context,
         barrierDismissible: false,
-        builder: (context) => Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const CircularProgressIndicator(),
-              const SizedBox(height: 16),
-              Text(
-                'importing'.tr(),
-                style: const TextStyle(color: Colors.white),
-              ),
-            ],
-          ),
+        builder: (context) => Dialog(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          child: Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surface,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SizedBox(
+                  width: 48,
+                  height: 48,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 3,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  'importing'.tr(),
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  '${'importing_passwords'.tr()}...',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: AppColors.grey600,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ).animate().fadeIn(duration: 200.ms).scale(begin: const Offset(0.8, 0.8)),
         ),
       );
 
@@ -608,6 +706,23 @@ class _SettingsPageState extends State<SettingsPage> {
       // Close loading dialog
       if (!mounted) return;
       Navigator.pop(context);
+
+      // Mark that data was imported
+      setState(() {
+        _dataImported = true;
+      });
+
+      // Refresh passwords in home page by reloading PasswordsCubit
+      if (mounted) {
+        // Import the PasswordsCubit to refresh the home page
+        try {
+          context.read<PasswordsCubit>().loadPasswords();
+          print('Passwords reloaded after import');
+        } catch (e) {
+          print('Could not reload passwords cubit: $e');
+          // This is okay if we're not in the home page context
+        }
+      }
 
       // Show success message
       if (!mounted) return;

@@ -4,7 +4,7 @@ import '../../features/passwords/data/models/password_model.dart';
 
 class CsvImportService {
   /// Parse CSV file and return list of PasswordModel
-  /// Supports common CSV formats from password managers (Chrome, Firefox, etc.)
+  /// Supports common CSV formats from password managers (Chrome, Firefox, Google Passwords, etc.)
   Future<List<PasswordModel>> parsePasswordsFromCsv(String filePath) async {
     try {
       final file = File(filePath);
@@ -13,29 +13,42 @@ class CsvImportService {
       // Parse CSV with different configurations to handle various formats
       List<List<dynamic>> rows;
       try {
-        rows = const CsvToListConverter().convert(csvString);
+        // Try standard comma delimiter first
+        rows = const CsvToListConverter(
+          eol: '\n',
+          shouldParseNumbers: false,
+        ).convert(csvString);
       } catch (e) {
-        // Try with different field delimiter
-        rows = const CsvToListConverter(fieldDelimiter: ';').convert(csvString);
+        // Try with semicolon delimiter
+        rows = const CsvToListConverter(
+          fieldDelimiter: ';',
+          eol: '\n',
+          shouldParseNumbers: false,
+        ).convert(csvString);
       }
       
       if (rows.isEmpty) {
         throw Exception('CSV file is empty');
       }
       
-      // First row is headers
+      // First row is headers - normalize them
       final headers = rows[0].map((h) => h.toString().toLowerCase().trim()).toList();
       
-      // Find column indices
+      print('CSV Headers found: $headers'); // Debug log
+      
+      // Find column indices - Google Passwords uses: name,url,username,password,note
+      final titleIndex = _findColumnIndex(headers, ['name', 'title', 'service', 'account']);
       final urlIndex = _findColumnIndex(headers, ['url', 'website', 'site', 'address', 'link']);
       final usernameIndex = _findColumnIndex(headers, ['username', 'user', 'login', 'email', 'account']);
       final passwordIndex = _findColumnIndex(headers, ['password', 'pass', 'pwd']);
-      final titleIndex = _findColumnIndex(headers, ['title', 'name', 'service']);
-      final notesIndex = _findColumnIndex(headers, ['notes', 'note', 'comment', 'description']);
+      final notesIndex = _findColumnIndex(headers, ['note', 'notes', 'comment', 'description', 'memo']);
       
       if (passwordIndex == -1) {
-        throw Exception('Password column not found in CSV file');
+        print('Available headers: $headers');
+        throw Exception('Password column not found in CSV file. Please ensure the file contains a "password" column.');
       }
+      
+      print('Column indices - Title: $titleIndex, URL: $urlIndex, Username: $usernameIndex, Password: $passwordIndex, Notes: $notesIndex');
       
       final passwords = <PasswordModel>[];
       final now = DateTime.now();
@@ -49,10 +62,17 @@ class CsvImportService {
           continue;
         }
         
+        // Ensure row has enough columns
+        if (passwordIndex >= row.length) {
+          print('Row $i has insufficient columns, skipping');
+          continue;
+        }
+        
         final password = row[passwordIndex].toString().trim();
         
         // Skip rows without password
         if (password.isEmpty) {
+          print('Row $i has empty password, skipping');
           continue;
         }
         
@@ -62,31 +82,45 @@ class CsvImportService {
         String? title;
         String? notes;
         
+        if (titleIndex != -1 && titleIndex < row.length) {
+          title = row[titleIndex].toString().trim();
+          if (title.isEmpty) title = null;
+        }
+        
         if (urlIndex != -1 && urlIndex < row.length) {
           url = row[urlIndex].toString().trim();
+          // Handle multiple URLs (Google Passwords sometimes exports multiple URLs)
+          if (url.contains(',')) {
+            url = url.split(',').first.trim();
+          }
+          if (url.isEmpty) url = null;
         }
         
         if (usernameIndex != -1 && usernameIndex < row.length) {
           username = row[usernameIndex].toString().trim();
-        }
-        
-        if (titleIndex != -1 && titleIndex < row.length) {
-          title = row[titleIndex].toString().trim();
+          if (username.isEmpty) username = null;
         }
         
         if (notesIndex != -1 && notesIndex < row.length) {
           notes = row[notesIndex].toString().trim();
+          if (notes.isEmpty) notes = null;
         }
         
-        // If no title, try to extract from URL
-        if ((title == null || title.isEmpty) && url != null && url.isNotEmpty) {
-          title = _extractTitleFromUrl(url);
-        }
-        
-        // If still no title, use URL or generic name
+        // Determine title with fallback logic
         if (title == null || title.isEmpty) {
-          title = url ?? 'Imported Password ${i}';
+          if (url != null && url.isNotEmpty) {
+            // Extract title from URL
+            title = _extractTitleFromUrl(url);
+          } else if (username != null && username.isNotEmpty) {
+            // Use username as title
+            title = username;
+          } else {
+            // Use generic name
+            title = 'Password ${i}';
+          }
         }
+        
+        print('Importing: $title | ${username ?? "no username"} | ${url ?? "no url"}');
         
         passwords.add(PasswordModel(
           title: title,
@@ -100,6 +134,7 @@ class CsvImportService {
         ));
       }
       
+      print('Successfully parsed ${passwords.length} passwords from CSV');
       return passwords;
     } catch (e) {
       throw Exception('Failed to parse CSV file: $e');
@@ -107,7 +142,19 @@ class CsvImportService {
   }
   
   /// Find column index by checking multiple possible header names
+  /// Performs exact match first, then substring match
   int _findColumnIndex(List<String> headers, List<String> possibleNames) {
+    // First try exact match
+    for (int i = 0; i < headers.length; i++) {
+      final header = headers[i];
+      for (final name in possibleNames) {
+        if (header == name) {
+          return i;
+        }
+      }
+    }
+    
+    // Then try substring match
     for (int i = 0; i < headers.length; i++) {
       final header = headers[i];
       for (final name in possibleNames) {
@@ -116,6 +163,7 @@ class CsvImportService {
         }
       }
     }
+    
     return -1;
   }
   

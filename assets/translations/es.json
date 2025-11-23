@@ -82,5 +82,12 @@
   "choose_language": "Elegir Idioma",
   "english": "English",
   "turkish": "Türkçe",
-  "spanish": "Español"
+  "spanish": "Español",
+  "import": "Importar",
+  "importing": "Importando",
+  "importing_passwords": "Importando contraseñas",
+  "reading_file": "Leyendo Archivo",
+  "please_wait": "Por favor espera",
+  "import_success": "Importado exitosamente",
+  "import_failed": "La importación falló"
 }

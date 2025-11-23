@@ -107,11 +107,16 @@ class _HomePageState extends State<HomePage> {
             ),
             IconButton(
               icon: const Icon(Icons.settings),
-              onPressed: () {
-                Navigator.push(
+              onPressed: () async {
+                final result = await Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => const SettingsPage()),
                 );
+                
+                // Reload passwords if data was imported
+                if (result == 'imported' && mounted) {
+                  context.read<PasswordsCubit>().loadPasswords();
+                }
               },
             ),
           ],
