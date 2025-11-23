@@ -12,6 +12,7 @@ import '../../../passwords/presentation/cubit/passwords_cubit.dart';
 import '../cubit/theme_cubit.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'dart:convert';
 
 class SettingsPage extends StatefulWidget {
@@ -248,6 +249,13 @@ class _SettingsPageState extends State<SettingsPage> {
               onTap: _importData,
             ),
             _buildActionTile(
+              title: 'export_google_passwords'.tr(),
+              subtitle: 'open_google_password_manager'.tr(),
+              icon: Icons.open_in_new,
+              iconColor: const Color(0xFF4285F4), // Google Blue
+              onTap: _openGooglePasswordManager,
+            ),
+            _buildActionTile(
               title: 'export_data'.tr(),
               subtitle: 'export_passwords_json'.tr(),
               icon: Icons.file_download,
@@ -315,11 +323,15 @@ class _SettingsPageState extends State<SettingsPage> {
     required String subtitle,
     required IconData icon,
     required VoidCallback onTap,
+    Color? iconColor,
   }) {
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       child: ListTile(
-        leading: Icon(icon, color: Theme.of(context).colorScheme.primary),
+        leading: Icon(
+          icon, 
+          color: iconColor ?? Theme.of(context).colorScheme.primary,
+        ),
         title: Text(title),
         subtitle: Text(subtitle),
         trailing: const Icon(Icons.chevron_right),
@@ -447,6 +459,157 @@ class _SettingsPageState extends State<SettingsPage> {
           backgroundColor: AppColors.error,
         ),
       );
+    }
+  }
+
+  Future<void> _openGooglePasswordManager() async {
+    // Show information dialog first
+    final shouldOpen = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        icon: const Icon(
+          Icons.info_outline,
+          size: 48,
+          color: Color(0xFF4285F4), // Google Blue
+        ),
+        title: Text('export_google_passwords'.tr()),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'google_export_instructions'.tr(),
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.grey100,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: AppColors.grey300),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.looks_one, size: 20, color: Color(0xFF4285F4)),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'google_step_1'.tr(),
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      const Icon(Icons.looks_two, size: 20, color: Color(0xFF4285F4)),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'google_step_2'.tr(),
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      const Icon(Icons.looks_3, size: 20, color: Color(0xFF4285F4)),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'google_step_3'.tr(),
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text('cancel'.tr()),
+          ),
+          FilledButton.icon(
+            onPressed: () => Navigator.pop(context, true),
+            icon: const Icon(Icons.open_in_new, size: 18),
+            label: Text('open_browser'.tr()),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldOpen != true) return;
+
+    // Try primary URL first (with export parameter)
+    const primaryUrl = 'https://passwords.google.com/options?ep=1';
+    // Fallback to main page if primary fails
+    const fallbackUrl = 'https://passwords.google.com';
+    
+    try {
+      bool launched = false;
+      
+      // Try primary URL first
+      try {
+        final primaryUri = Uri.parse(primaryUrl);
+        launched = await launchUrl(
+          primaryUri,
+          mode: LaunchMode.externalApplication,
+        );
+      } catch (primaryError) {
+        print('Primary URL failed: $primaryError');
+        
+        // Try fallback URL
+        try {
+          final fallbackUri = Uri.parse(fallbackUrl);
+          launched = await launchUrl(
+            fallbackUri,
+            mode: LaunchMode.externalApplication,
+          );
+        } catch (fallbackError) {
+          print('Fallback URL also failed: $fallbackError');
+        }
+      }
+      
+      if (launched && mounted) {
+        // Show success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('browser_opened_successfully'.tr()),
+            backgroundColor: AppColors.success,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      } else if (mounted) {
+        // Show error message if both URLs failed
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('could_not_open_browser'.tr()),
+            backgroundColor: AppColors.error,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    } catch (e) {
+      print('Error opening Google Password Manager: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('error_opening_link'.tr()),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
     }
   }
 

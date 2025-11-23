@@ -89,5 +89,15 @@
   "reading_file": "Leyendo Archivo",
   "please_wait": "Por favor espera",
   "import_success": "Importado exitosamente",
-  "import_failed": "La importación falló"
+  "import_failed": "La importación falló",
+  "export_google_passwords": "Exportar Contraseñas de Google",
+  "open_google_password_manager": "Abrir el Administrador de Contraseñas de Google para exportar tus contraseñas",
+  "google_export_instructions": "Se abrirá el Administrador de Contraseñas de Google. Sigue estos pasos para exportar tus contraseñas en formato CSV:",
+  "google_step_1": "Haz clic en el icono de configuración (⚙️) en la parte superior derecha",
+  "google_step_2": "Selecciona la opción \"Descargar contraseñas\"",
+  "google_step_3": "Descarga el archivo CSV e impórtalo a Passora",
+  "open_browser": "Abrir Navegador",
+  "browser_opened_successfully": "Navegador abierto exitosamente",
+  "could_not_open_browser": "No se pudo abrir el navegador",
+  "error_opening_link": "Error al abrir el enlace"
 }
