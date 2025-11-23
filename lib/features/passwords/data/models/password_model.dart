@@ -8,6 +8,13 @@ class PasswordModel {
   int? categoryId;
   DateTime createdAt;
   DateTime updatedAt;
+  
+  // Banking-specific fields (optional)
+  String? cardHolderName;
+  String? cardNumber;
+  List<String>? ibanNumbers;
+  String? expiryDate; // Format: MM/YY
+  String? cvv;
 
   PasswordModel({
     this.id,
@@ -19,6 +26,11 @@ class PasswordModel {
     this.categoryId,
     required this.createdAt,
     required this.updatedAt,
+    this.cardHolderName,
+    this.cardNumber,
+    this.ibanNumbers,
+    this.expiryDate,
+    this.cvv,
   });
 
   // Convert to Map for SQLite
@@ -33,11 +45,17 @@ class PasswordModel {
       'categoryId': categoryId,
       'createdAt': createdAt.millisecondsSinceEpoch,
       'updatedAt': updatedAt.millisecondsSinceEpoch,
+      'cardHolderName': cardHolderName,
+      'cardNumber': cardNumber,
+      'ibanNumbers': ibanNumbers != null ? ibanNumbers!.join('|||') : null, // Store as delimited string
+      'expiryDate': expiryDate,
+      'cvv': cvv,
     };
   }
 
   // Create from Map for SQLite
   static PasswordModel fromMap(Map<String, dynamic> map) {
+    final ibanString = map['ibanNumbers'] as String?;
     return PasswordModel(
       id: map['id'] as int?,
       title: map['title'] as String,
@@ -48,6 +66,13 @@ class PasswordModel {
       categoryId: map['categoryId'] as int?,
       createdAt: DateTime.fromMillisecondsSinceEpoch(map['createdAt'] as int),
       updatedAt: DateTime.fromMillisecondsSinceEpoch(map['updatedAt'] as int),
+      cardHolderName: map['cardHolderName'] as String?,
+      cardNumber: map['cardNumber'] as String?,
+      ibanNumbers: ibanString != null && ibanString.isNotEmpty 
+          ? ibanString.split('|||') 
+          : null,
+      expiryDate: map['expiryDate'] as String?,
+      cvv: map['cvv'] as String?,
     );
   }
 
@@ -62,6 +87,11 @@ class PasswordModel {
     int? categoryId,
     DateTime? createdAt,
     DateTime? updatedAt,
+    String? cardHolderName,
+    String? cardNumber,
+    List<String>? ibanNumbers,
+    String? expiryDate,
+    String? cvv,
   }) {
     return PasswordModel(
       id: id ?? this.id,
@@ -73,6 +103,11 @@ class PasswordModel {
       categoryId: categoryId ?? this.categoryId,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      cardHolderName: cardHolderName ?? this.cardHolderName,
+      cardNumber: cardNumber ?? this.cardNumber,
+      ibanNumbers: ibanNumbers ?? this.ibanNumbers,
+      expiryDate: expiryDate ?? this.expiryDate,
+      cvv: cvv ?? this.cvv,
     );
   }
 }

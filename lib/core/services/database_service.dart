@@ -36,7 +36,7 @@ class DatabaseService {
       
       _database = await openDatabase(
         path,
-        version: 6,
+        version: 7,
         onCreate: _createDb,
         onUpgrade: _upgradeDb,
       );
@@ -71,6 +71,11 @@ class DatabaseService {
         categoryId INTEGER,
         createdAt INTEGER NOT NULL,
         updatedAt INTEGER NOT NULL,
+        cardHolderName TEXT,
+        cardNumber TEXT,
+        ibanNumbers TEXT,
+        expiryDate TEXT,
+        cvv TEXT,
         FOREIGN KEY (categoryId) REFERENCES categories (id)
       )
     ''');
@@ -212,6 +217,20 @@ class DatabaseService {
         print('Categories updated to new simplified list (all deletable)');
       } catch (e) {
         print('Error updating categories: $e');
+      }
+    }
+    
+    if (oldVersion < 7) {
+      // Add banking-specific fields to passwords table
+      try {
+        await db.execute('ALTER TABLE passwords ADD COLUMN cardHolderName TEXT');
+        await db.execute('ALTER TABLE passwords ADD COLUMN cardNumber TEXT');
+        await db.execute('ALTER TABLE passwords ADD COLUMN ibanNumbers TEXT');
+        await db.execute('ALTER TABLE passwords ADD COLUMN expiryDate TEXT');
+        await db.execute('ALTER TABLE passwords ADD COLUMN cvv TEXT');
+        print('Banking fields added to passwords table');
+      } catch (e) {
+        print('Error adding banking fields: $e');
       }
     }
   }

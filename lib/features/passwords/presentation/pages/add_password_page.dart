@@ -23,10 +23,18 @@ class _AddPasswordPageState extends State<AddPasswordPage> {
   final _websiteController = TextEditingController();
   final _notesController = TextEditingController();
   
+  // Banking-specific controllers
+  final _cardHolderNameController = TextEditingController();
+  final _cardNumberController = TextEditingController();
+  final _expiryDateController = TextEditingController();
+  final _cvvController = TextEditingController();
+  final List<TextEditingController> _ibanControllers = [];
+  
   bool _obscurePassword = true;
   bool _isLoading = false;
   CategoryModel? _selectedCategory;
   List<CategoryModel> _categories = [];
+  bool _isBankingCategory = false;
 
   @override
   void initState() {
@@ -38,6 +46,20 @@ class _AddPasswordPageState extends State<AddPasswordPage> {
       _passwordController.text = widget.editingPassword!.password;
       _websiteController.text = widget.editingPassword!.website ?? '';
       _notesController.text = widget.editingPassword!.notes ?? '';
+      
+      // Load banking fields if present
+      _cardHolderNameController.text = widget.editingPassword!.cardHolderName ?? '';
+      _cardNumberController.text = widget.editingPassword!.cardNumber ?? '';
+      _expiryDateController.text = widget.editingPassword!.expiryDate ?? '';
+      _cvvController.text = widget.editingPassword!.cvv ?? '';
+      
+      // Load IBAN numbers
+      if (widget.editingPassword!.ibanNumbers != null && widget.editingPassword!.ibanNumbers!.isNotEmpty) {
+        for (var iban in widget.editingPassword!.ibanNumbers!) {
+          final controller = TextEditingController(text: iban);
+          _ibanControllers.add(controller);
+        }
+      }
       // Category will be loaded after categories are fetched
     }
   }
@@ -53,6 +75,13 @@ class _AddPasswordPageState extends State<AddPasswordPage> {
     _passwordController.dispose();
     _websiteController.dispose();
     _notesController.dispose();
+    _cardHolderNameController.dispose();
+    _cardNumberController.dispose();
+    _expiryDateController.dispose();
+    _cvvController.dispose();
+    for (var controller in _ibanControllers) {
+      controller.dispose();
+    }
     super.dispose();
   }
 
@@ -187,7 +216,104 @@ class _AddPasswordPageState extends State<AddPasswordPage> {
                     icon: Icons.notes,
                     maxLines: 3,
                   ),
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 16),
+                  
+                  // Banking-specific fields (only show if banking category is selected)
+                  if (_isBankingCategory) ...[
+                    // Section header
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: Row(
+                        children: [
+                          Icon(Icons.account_balance, 
+                            color: Theme.of(context).colorScheme.primary),
+                          const SizedBox(width: 8),
+                          Text(
+                            'banking_info'.tr(),
+                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    
+                    // Card holder name
+                    _buildTextField(
+                      controller: _cardHolderNameController,
+                      label: 'card_holder_name'.tr(),
+                      hint: 'card_holder_name_hint'.tr(),
+                      icon: Icons.person_outline,
+                    ),
+                    const SizedBox(height: 16),
+                    
+                    // Card number
+                    _buildTextField(
+                      controller: _cardNumberController,
+                      label: 'card_number'.tr(),
+                      hint: 'card_number_hint'.tr(),
+                      icon: Icons.credit_card,
+                      keyboardType: TextInputType.number,
+                    ),
+                    const SizedBox(height: 16),
+                    
+                    // Expiry date and CVV in a row
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _buildTextField(
+                            controller: _expiryDateController,
+                            label: 'expiry_date'.tr(),
+                            hint: 'MM/YY',
+                            icon: Icons.calendar_today,
+                            keyboardType: TextInputType.datetime,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: _buildTextField(
+                            controller: _cvvController,
+                            label: 'cvv'.tr(),
+                            hint: 'CVV',
+                            icon: Icons.lock_outline,
+                            keyboardType: TextInputType.number,
+                            obscureText: true,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    
+                    // IBAN numbers section
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'iban_numbers'.tr(),
+                          style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                            fontWeight: FontWeight.w600,
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        ..._buildIbanFields(),
+                        const SizedBox(height: 8),
+                        OutlinedButton.icon(
+                          onPressed: _addIbanField,
+                          icon: const Icon(Icons.add),
+                          label: Text('add_iban'.tr()),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: Theme.of(context).colorScheme.primary,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                  
+                  const SizedBox(height: 16),
                   
                   // Save button
                   SizedBox(
@@ -316,6 +442,12 @@ class _AddPasswordPageState extends State<AddPasswordPage> {
                       print('Category selected: ${newValue?.name ?? 'None'} (ID: ${newValue?.id})');
                       setState(() {
                         _selectedCategory = newValue;
+                        _isBankingCategory = newValue?.name == 'Bankacılık';
+                        
+                        // Initialize one IBAN field if banking is selected and list is empty
+                        if (_isBankingCategory && _ibanControllers.isEmpty) {
+                          _ibanControllers.add(TextEditingController());
+                        }
                       });
                     },
                   ),
@@ -389,6 +521,66 @@ class _AddPasswordPageState extends State<AddPasswordPage> {
     );
   }
 
+  void _addIbanField() {
+    setState(() {
+      _ibanControllers.add(TextEditingController());
+    });
+  }
+
+  void _removeIbanField(int index) {
+    if (_ibanControllers.length > 1) {
+      setState(() {
+        _ibanControllers[index].dispose();
+        _ibanControllers.removeAt(index);
+      });
+    }
+  }
+
+  List<Widget> _buildIbanFields() {
+    return List.generate(_ibanControllers.length, (index) {
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 8),
+        child: Row(
+          children: [
+            Expanded(
+              child: TextFormField(
+                controller: _ibanControllers[index],
+                decoration: InputDecoration(
+                  hintText: 'TR00 0000 0000 0000 0000 0000 00',
+                  prefixIcon: Icon(Icons.account_balance_outlined, 
+                    color: Theme.of(context).colorScheme.onSurfaceVariant),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Theme.of(context).colorScheme.outline),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Theme.of(context).colorScheme.outline),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Theme.of(context).colorScheme.primary),
+                  ),
+                  filled: true,
+                  fillColor: Theme.of(context).colorScheme.surface,
+                ),
+                keyboardType: TextInputType.text,
+              ),
+            ),
+            if (_ibanControllers.length > 1) ...[
+              const SizedBox(width: 8),
+              IconButton(
+                icon: Icon(Icons.delete_outline, 
+                  color: Theme.of(context).colorScheme.error),
+                onPressed: () => _removeIbanField(index),
+              ),
+            ],
+          ],
+        ),
+      );
+    });
+  }
+
   void _generatePassword() {
     // Simple password generator
     const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#\$%^&*';
@@ -421,6 +613,19 @@ class _AddPasswordPageState extends State<AddPasswordPage> {
     });
 
     print('Saving password with categoryId: ${_selectedCategory?.id} (${_selectedCategory?.name})');
+    
+    // Collect IBAN numbers if banking category
+    List<String>? ibanNumbers;
+    if (_isBankingCategory) {
+      ibanNumbers = _ibanControllers
+          .map((controller) => controller.text.trim())
+          .where((iban) => iban.isNotEmpty)
+          .toList();
+      if (ibanNumbers.isEmpty) {
+        ibanNumbers = null;
+      }
+    }
+    
     final password = PasswordModel(
       id: widget.editingPassword?.id,
       title: _titleController.text.trim(),
@@ -431,6 +636,19 @@ class _AddPasswordPageState extends State<AddPasswordPage> {
       categoryId: _selectedCategory?.id,
       createdAt: widget.editingPassword?.createdAt ?? DateTime.now(),
       updatedAt: DateTime.now(),
+      cardHolderName: _isBankingCategory && _cardHolderNameController.text.trim().isNotEmpty
+          ? _cardHolderNameController.text.trim()
+          : null,
+      cardNumber: _isBankingCategory && _cardNumberController.text.trim().isNotEmpty
+          ? _cardNumberController.text.trim()
+          : null,
+      ibanNumbers: ibanNumbers,
+      expiryDate: _isBankingCategory && _expiryDateController.text.trim().isNotEmpty
+          ? _expiryDateController.text.trim()
+          : null,
+      cvv: _isBankingCategory && _cvvController.text.trim().isNotEmpty
+          ? _cvvController.text.trim()
+          : null,
     );
 
     try {

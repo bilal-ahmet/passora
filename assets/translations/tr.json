@@ -166,5 +166,14 @@
   "biometric_not_available": "Biyometrik kimlik doğrulama bu cihazda mevcut değil",
   "verify_identity_biometric": "Biyometrik kimlik doğrulamayı etkinleştirmek için kimliğinizi doğrulayın",
   "biometric_auth_failed": "Biyometrik kimlik doğrulama başarısız",
-  "failed_to_save_settings": "Ayarlar kaydedilemedi"
+  "failed_to_save_settings": "Ayarlar kaydedilemedi",
+  "banking_info": "Bankacılık Bilgileri",
+  "card_holder_name": "Kart Üzerindeki İsim",
+  "card_holder_name_hint": "örn. AHMET YILMAZ",
+  "card_number": "Kart Numarası",
+  "card_number_hint": "örn. 1234 5678 9012 3456",
+  "expiry_date": "Son Kullanma Tarihi",
+  "cvv": "CVV",
+  "iban_numbers": "IBAN Numaraları",
+  "add_iban": "IBAN Ekle"
 }

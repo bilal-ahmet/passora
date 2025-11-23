@@ -379,6 +379,56 @@ class _HomePageState extends State<HomePage> {
               _buildDetailItem('Password', password.password, isPassword: true),
               if (password.website != null && password.website!.isNotEmpty)
                 _buildDetailItem('Website', password.website!),
+              
+              // Banking-specific fields
+              if (password.cardHolderName != null && password.cardHolderName!.isNotEmpty) ...[
+                const SizedBox(height: 8),
+                Divider(color: Theme.of(context).colorScheme.primary),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: Row(
+                    children: [
+                      Icon(Icons.account_balance, 
+                        color: Theme.of(context).colorScheme.primary, size: 20),
+                      const SizedBox(width: 8),
+                      Text(
+                        'banking_info'.tr(),
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                _buildDetailItem('card_holder_name'.tr(), password.cardHolderName!),
+              ],
+              
+              if (password.cardNumber != null && password.cardNumber!.isNotEmpty)
+                _buildDetailItem('card_number'.tr(), password.cardNumber!),
+              
+              if (password.expiryDate != null && password.expiryDate!.isNotEmpty)
+                _buildDetailItem('expiry_date'.tr(), password.expiryDate!),
+              
+              if (password.cvv != null && password.cvv!.isNotEmpty)
+                _buildDetailItem('cvv'.tr(), password.cvv!, isPassword: true),
+              
+              if (password.ibanNumbers != null && password.ibanNumbers!.isNotEmpty) ...[
+                Padding(
+                  padding: const EdgeInsets.only(top: 8, bottom: 4),
+                  child: Text(
+                    'iban_numbers'.tr(),
+                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                ...password.ibanNumbers!.asMap().entries.map((entry) =>
+                  _buildDetailItem('IBAN ${entry.key + 1}', entry.value),
+                ),
+              ],
+              
               if (password.notes != null && password.notes!.isNotEmpty)
                 _buildDetailItem('Notes', password.notes!),
             ],
