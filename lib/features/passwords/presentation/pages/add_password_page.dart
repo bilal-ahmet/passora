@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../data/models/password_model.dart';
@@ -263,6 +264,11 @@ class _AddPasswordPageState extends State<AddPasswordPage> {
                       hint: 'card_number_hint'.tr(),
                       icon: Icons.credit_card,
                       keyboardType: TextInputType.number,
+                      maxLength: 16,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                        LengthLimitingTextInputFormatter(16),
+                      ],
                     ),
                     const SizedBox(height: 16),
                     
@@ -275,7 +281,13 @@ class _AddPasswordPageState extends State<AddPasswordPage> {
                             label: 'expiry_date'.tr(),
                             hint: 'MM/YY',
                             icon: Icons.calendar_today,
-                            keyboardType: TextInputType.datetime,
+                            keyboardType: TextInputType.number,
+                            maxLength: 5,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly,
+                              LengthLimitingTextInputFormatter(4),
+                              _ExpiryDateFormatter(),
+                            ],
                           ),
                         ),
                         const SizedBox(width: 16),
@@ -287,6 +299,11 @@ class _AddPasswordPageState extends State<AddPasswordPage> {
                             icon: Icons.lock_outline,
                             keyboardType: TextInputType.number,
                             obscureText: true,
+                            maxLength: 3,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly,
+                              LengthLimitingTextInputFormatter(3),
+                            ],
                           ),
                         ),
                       ],
@@ -486,6 +503,8 @@ class _AddPasswordPageState extends State<AddPasswordPage> {
     Widget? suffixIcon,
     TextInputType keyboardType = TextInputType.text,
     int maxLines = 1,
+    int? maxLength,
+    List<TextInputFormatter>? inputFormatters,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -504,10 +523,13 @@ class _AddPasswordPageState extends State<AddPasswordPage> {
           obscureText: obscureText,
           keyboardType: keyboardType,
           maxLines: maxLines,
+          maxLength: maxLength,
+          inputFormatters: inputFormatters,
           decoration: InputDecoration(
             hintText: hint,
             prefixIcon: Icon(icon, color: Theme.of(context).colorScheme.onSurfaceVariant),
             suffixIcon: suffixIcon,
+            counterText: '',
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(color: Theme.of(context).colorScheme.outline),
@@ -552,10 +574,22 @@ class _AddPasswordPageState extends State<AddPasswordPage> {
             Expanded(
               child: TextFormField(
                 controller: _ibanControllers[index],
+                maxLength: 26,
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z0-9]')),
+                  LengthLimitingTextInputFormatter(26),
+                  TextInputFormatter.withFunction((oldValue, newValue) {
+                    return TextEditingValue(
+                      text: newValue.text.toUpperCase(),
+                      selection: newValue.selection,
+                    );
+                  }),
+                ],
                 decoration: InputDecoration(
                   hintText: 'TR00 0000 0000 0000 0000 0000 00',
                   prefixIcon: Icon(Icons.account_balance_outlined, 
                     color: Theme.of(context).colorScheme.onSurfaceVariant),
+                  counterText: '',
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide(color: Theme.of(context).colorScheme.outline),
@@ -675,5 +709,36 @@ class _AddPasswordPageState extends State<AddPasswordPage> {
         _isLoading = false;
       });
     }
+  }
+}
+
+// Custom TextInputFormatter for expiry date (MM/YY format)
+class _ExpiryDateFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    final text = newValue.text;
+    
+    // Remove any non-digit characters
+    final digitsOnly = text.replaceAll(RegExp(r'\D'), '');
+    
+    // Limit to 4 digits
+    final limitedDigits = digitsOnly.substring(0, digitsOnly.length > 4 ? 4 : digitsOnly.length);
+    
+    // Format as MM/YY
+    String formatted = '';
+    for (int i = 0; i < limitedDigits.length; i++) {
+      if (i == 2) {
+        formatted += '/';
+      }
+      formatted += limitedDigits[i];
+    }
+    
+    return TextEditingValue(
+      text: formatted,
+      selection: TextSelection.collapsed(offset: formatted.length),
+    );
   }
 }
