@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:easy_localization/easy_localization.dart';
 
-import '../../../../core/constants/app_constants.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/services/database_service.dart';
@@ -82,104 +80,92 @@ class _SplashPageState extends State<SplashPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.primaryBlue,
-      body: SafeArea(
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // App Logo/Icon
-              Container(
-                width: 120,
-                height: 120,
-                decoration: BoxDecoration(
-                  color: AppColors.white,
-                  borderRadius: BorderRadius.circular(24),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.black.withValues(alpha: 0.2),
-                      blurRadius: 20,
-                      offset: const Offset(0, 8),
-                    ),
-                  ],
-                ),
-                child: const Icon(
-                  Icons.security,
-                  size: 64,
-                  color: AppColors.primaryBlue,
-                ),
-              )
-                  .animate()
-                  .scale(
-                    duration: AppConstants.longAnimationDuration,
-                    curve: Curves.elasticOut,
-                  )
-                  .fadeIn(
-                    duration: AppConstants.animationDuration,
-                  ),
-              
-              const SizedBox(height: 32),
-              
-              // App Name
-              Text(
-                AppStrings.appName,
-                style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                  color: AppColors.white,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 1.5,
-                ),
-              )
-                  .animate(delay: 200.ms)
-                  .fadeIn(
-                    duration: AppConstants.animationDuration,
-                  )
-                  .slideY(
-                    begin: 0.3,
-                    end: 0,
-                    duration: AppConstants.animationDuration,
-                    curve: Curves.easeOut,
-                  ),
-              
-              const SizedBox(height: 16),
-              
-              // App Description
-              Text(
-                'secure_password_manager'.tr(),
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: AppColors.white.withValues(alpha: 0.9),
-                  fontWeight: FontWeight.w400,
-                ),
-                textAlign: TextAlign.center,
-              )
-                  .animate(delay: 400.ms)
-                  .fadeIn(
-                    duration: AppConstants.animationDuration,
-                  )
-                  .slideY(
-                    begin: 0.3,
-                    end: 0,
-                    duration: AppConstants.animationDuration,
-                    curve: Curves.easeOut,
-                  ),
-              
-              const SizedBox(height: 64),
-              
-              // Loading Indicator
-              SizedBox(
-                width: 32,
-                height: 32,
-                child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    AppColors.white.withValues(alpha: 0.8),
-                  ),
-                  strokeWidth: 3,
-                ),
-              )
-                  .animate(delay: 400.ms)
-                  .fadeIn(
-                    duration: AppConstants.animationDuration,
-                  ),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              AppColors.primaryBlue,
+              AppColors.primaryBlueLight,
+              AppColors.accentLilac,
             ],
+            stops: const [0.0, 0.5, 1.0],
+          ),
+        ),
+        child: SafeArea(
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // App Logo/Icon with gradient
+                Container(
+                  width: 120,
+                  height: 120,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        AppColors.white,
+                        AppColors.grey50,
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(32),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.primaryBlueDark.withValues(alpha: 0.3),
+                        blurRadius: 20,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
+                  ),
+                  child: const Icon(
+                    Icons.security,
+                    size: 64,
+                    color: AppColors.primaryBlue,
+                  ),
+                ),
+              
+                const SizedBox(height: 32),
+              
+                // App Name
+                Text(
+                  AppStrings.appName,
+                  style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                    color: AppColors.white,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1.5,
+                  ),
+                ),
+              
+                const SizedBox(height: 16),
+              
+                // App Description
+                Text(
+                  'secure_password_manager'.tr(),
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    color: AppColors.white.withValues(alpha: 0.9),
+                    fontWeight: FontWeight.w400,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              
+                const SizedBox(height: 64),
+              
+                // Loading Indicator
+                SizedBox(
+                  width: 32,
+                  height: 32,
+                  child: CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      AppColors.white.withValues(alpha: 0.8),
+                    ),
+                    strokeWidth: 3,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

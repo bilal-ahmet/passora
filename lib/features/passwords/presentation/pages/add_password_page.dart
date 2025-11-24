@@ -135,249 +135,252 @@ class _AddPasswordPageState extends State<AddPasswordPage> {
             }
           },
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(20),
             child: Form(
               key: _formKey,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Title field
-                  _buildTextField(
-                    controller: _titleController,
-                    label: 'title'.tr(),
-                    hint: 'title_hint'.tr(),
-                    icon: Icons.title,
-                    validator: (value) {
-                      if (value == null || value.trim().isEmpty) {
-                        return 'please_enter_title'.tr();
-                      }
-                      return null;
-                    },
+                  // Basic Information Section
+                  _buildSectionCard(
+                    title: 'basic_information'.tr(),
+                    children: [
+                      _buildTextField(
+                        controller: _titleController,
+                        label: 'title'.tr(),
+                        hint: 'title_hint'.tr(),
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'please_enter_title'.tr();
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 20),
+                      _buildCategorySelector(),
+                    ],
                   ),
-                  const SizedBox(height: 16),
                   
-                  // Category selection
-                  _buildCategorySelector(),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 20),
                   
-                  // Username field (optional)
-                  _buildTextField(
-                    controller: _usernameController,
-                    label: 'username_email'.tr(),
-                    hint: 'username_email_hint'.tr(),
-                    icon: Icons.person,
-                    validator: null, // Made optional - no validation required
-                  ),
-                  const SizedBox(height: 16),
-                  
-                  // Password field
-                  _buildTextField(
-                    controller: _passwordController,
-                    label: 'password'.tr(),
-                    hint: 'password_hint'.tr(),
-                    icon: Icons.lock,
-                    obscureText: _obscurePassword,
-                    suffixIcon: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                          icon: Icon(_obscurePassword ? Icons.visibility : Icons.visibility_off),
-                          onPressed: () {
-                            setState(() {
-                              _obscurePassword = !_obscurePassword;
-                            });
-                          },
+                  // Credentials Section
+                  _buildSectionCard(
+                    title: 'credentials'.tr(),
+                    children: [
+                      _buildTextField(
+                        controller: _usernameController,
+                        label: 'username_email'.tr(),
+                        hint: 'username_email_hint'.tr(),
+                        validator: null,
+                      ),
+                      const SizedBox(height: 20),
+                      _buildTextField(
+                        controller: _passwordController,
+                        label: 'password'.tr(),
+                        hint: 'password_hint'.tr(),
+                        obscureText: _obscurePassword,
+                        suffixIcon: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: Icon(
+                                _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                                size: 20,
+                              ),
+                              onPressed: () {
+                                setState(() {
+                                  _obscurePassword = !_obscurePassword;
+                                });
+                              },
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.autorenew, size: 20),
+                              onPressed: _generatePassword,
+                            ),
+                          ],
                         ),
-                        IconButton(
-                          icon: const Icon(Icons.refresh),
-                          onPressed: _generatePassword,
-                        ),
-                      ],
-                    ),
-                    validator: (value) {
-                      if (value == null || value.trim().isEmpty) {
-                        return 'please_enter_password'.tr();
-                      }
-                      if (value.length < 6) {
-                        return 'password_min_length'.tr();
-                      }
-                      return null;
-                    },
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'please_enter_password'.tr();
+                          }
+                          if (value.length < 6) {
+                            return 'password_min_length'.tr();
+                          }
+                          return null;
+                        },
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 16),
                   
-                  // Website field
-                  _buildTextField(
-                    controller: _websiteController,
-                    label: 'website_optional'.tr(),
-                    hint: 'website_hint'.tr(),
-                    icon: Icons.web,
-                    keyboardType: TextInputType.url,
-                  ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 20),
                   
-                  // Notes field
-                  _buildTextField(
-                    controller: _notesController,
-                    label: 'notes_optional'.tr(),
-                    hint: 'notes_hint'.tr(),
-                    icon: Icons.notes,
-                    maxLines: 3,
+                  // Additional Details Section
+                  _buildSectionCard(
+                    title: 'additional_details'.tr(),
+                    children: [
+                      _buildTextField(
+                        controller: _websiteController,
+                        label: 'website_optional'.tr(),
+                        hint: 'website_hint'.tr(),
+                        keyboardType: TextInputType.url,
+                      ),
+                      const SizedBox(height: 20),
+                      _buildTextField(
+                        controller: _notesController,
+                        label: 'notes_optional'.tr(),
+                        hint: 'notes_hint'.tr(),
+                        maxLines: 4,
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 16),
+                  
+                  const SizedBox(height: 20),
                   
                   // Banking-specific fields (only show if banking category is selected)
-                  if (_isBankingCategory) ...[
-                    // Section header
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      child: Row(
-                        children: [
-                          Icon(Icons.account_balance, 
-                            color: Theme.of(context).colorScheme.primary),
-                          const SizedBox(width: 8),
-                          Text(
-                            'banking_info'.tr(),
-                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: Theme.of(context).colorScheme.primary,
+                  if (_isBankingCategory) 
+                    _buildSectionCard(
+                      title: 'banking_info'.tr(),
+                      children: [
+                        _buildTextField(
+                          controller: _cardHolderNameController,
+                          label: 'card_holder_name'.tr(),
+                          hint: 'card_holder_name_hint'.tr(),
+                        ),
+                        const SizedBox(height: 20),
+                        _buildTextField(
+                          controller: _cardNumberController,
+                          label: 'card_number'.tr(),
+                          hint: 'card_number_hint'.tr(),
+                          keyboardType: TextInputType.number,
+                          maxLength: 16,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly,
+                            LengthLimitingTextInputFormatter(16),
+                          ],
+                        ),
+                        const SizedBox(height: 20),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _buildTextField(
+                                controller: _expiryDateController,
+                                label: 'expiry_date'.tr(),
+                                hint: 'MM/YY',
+                                keyboardType: TextInputType.number,
+                                maxLength: 5,
+                                inputFormatters: [
+                                  FilteringTextInputFormatter.digitsOnly,
+                                  LengthLimitingTextInputFormatter(4),
+                                  _ExpiryDateFormatter(),
+                                ],
+                              ),
                             ),
-                          ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: _buildTextField(
+                                controller: _cvvController,
+                                label: 'cvv'.tr(),
+                                hint: 'CVV',
+                                keyboardType: TextInputType.number,
+                                obscureText: true,
+                                maxLength: 3,
+                                inputFormatters: [
+                                  FilteringTextInputFormatter.digitsOnly,
+                                  LengthLimitingTextInputFormatter(3),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 20),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.only(left: 4, bottom: 10),
+                              child: Text(
+                                'iban_numbers'.tr(),
+                                style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                  color: Theme.of(context).colorScheme.onSurface,
+                                  fontSize: 13,
+                                  letterSpacing: 0.3,
+                                ),
+                              ),
+                            ),
+                            ..._buildIbanFields(),
+                            const SizedBox(height: 12),
+                            OutlinedButton.icon(
+                              onPressed: _addIbanField,
+                              icon: const Icon(Icons.add, size: 18),
+                              label: Text('add_iban'.tr()),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: Theme.of(context).colorScheme.primary,
+                                side: BorderSide(
+                                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.5),
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  
+                  const SizedBox(height: 8),
+                  
+                  // Save button - Modern gradient design
+                  Container(
+                    width: double.infinity,
+                    height: 56,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Theme.of(context).colorScheme.primary,
+                          Theme.of(context).colorScheme.primary.withValues(alpha: 0.8),
                         ],
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    
-                    // Card holder name
-                    _buildTextField(
-                      controller: _cardHolderNameController,
-                      label: 'card_holder_name'.tr(),
-                      hint: 'card_holder_name_hint'.tr(),
-                      icon: Icons.person_outline,
-                    ),
-                    const SizedBox(height: 16),
-                    
-                    // Card number
-                    _buildTextField(
-                      controller: _cardNumberController,
-                      label: 'card_number'.tr(),
-                      hint: 'card_number_hint'.tr(),
-                      icon: Icons.credit_card,
-                      keyboardType: TextInputType.number,
-                      maxLength: 16,
-                      inputFormatters: [
-                        FilteringTextInputFormatter.digitsOnly,
-                        LengthLimitingTextInputFormatter(16),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    
-                    // Expiry date and CVV in a row
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _buildTextField(
-                            controller: _expiryDateController,
-                            label: 'expiry_date'.tr(),
-                            hint: 'MM/YY',
-                            icon: Icons.calendar_today,
-                            keyboardType: TextInputType.number,
-                            maxLength: 5,
-                            inputFormatters: [
-                              FilteringTextInputFormatter.digitsOnly,
-                              LengthLimitingTextInputFormatter(4),
-                              _ExpiryDateFormatter(),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: _buildTextField(
-                            controller: _cvvController,
-                            label: 'cvv'.tr(),
-                            hint: 'CVV',
-                            icon: Icons.lock_outline,
-                            keyboardType: TextInputType.number,
-                            obscureText: true,
-                            maxLength: 3,
-                            inputFormatters: [
-                              FilteringTextInputFormatter.digitsOnly,
-                              LengthLimitingTextInputFormatter(3),
-                            ],
-                          ),
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 16),
-                    
-                    // IBAN numbers section
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'iban_numbers'.tr(),
-                          style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                            fontWeight: FontWeight.w600,
-                            color: Theme.of(context).colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        ..._buildIbanFields(),
-                        const SizedBox(height: 8),
-                        OutlinedButton.icon(
-                          onPressed: _addIbanField,
-                          icon: const Icon(Icons.add),
-                          label: Text('add_iban'.tr()),
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: Theme.of(context).colorScheme.primary,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                  ],
-                  
-                  const SizedBox(height: 16),
-                  
-                  // Save button
-                  SizedBox(
-                    width: double.infinity,
                     child: ElevatedButton(
                       onPressed: _isLoading ? null : _savePassword,
                       style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        backgroundColor: Theme.of(context).colorScheme.primary,
+                        backgroundColor: Colors.transparent,
+                        shadowColor: Colors.transparent,
                         foregroundColor: Theme.of(context).colorScheme.onPrimary,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(20),
                         ),
-                        elevation: 2,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
                       ),
                       child: _isLoading
                           ? SizedBox(
-                              height: 20,
-                              width: 20,
+                              height: 24,
+                              width: 24,
                               child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.onPrimary),
+                                strokeWidth: 2.5,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  Theme.of(context).colorScheme.onPrimary,
+                                ),
                               ),
                             )
-                          : Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  widget.editingPassword != null ? Icons.update : Icons.save,
-                                  size: 20,
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  widget.editingPassword != null ? 'update_password'.tr() : 'save_password'.tr(),
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ],
+                          : Text(
+                              widget.editingPassword != null ? 'update_password'.tr() : 'save_password'.tr(),
+                              style: const TextStyle(
+                                fontSize: 17,
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: 0.5,
+                              ),
                             ),
                     ),
                   ),
@@ -394,92 +397,101 @@ class _AddPasswordPageState extends State<AddPasswordPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'category'.tr(),
-          style: Theme.of(context).textTheme.labelLarge?.copyWith(
-            fontWeight: FontWeight.w600,
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
+        Padding(
+          padding: const EdgeInsets.only(left: 4, bottom: 10),
+          child: Text(
+            'category'.tr(),
+            style: Theme.of(context).textTheme.labelLarge?.copyWith(
+              fontWeight: FontWeight.w600,
+              color: Theme.of(context).colorScheme.onSurface,
+              fontSize: 13,
+              letterSpacing: 0.3,
+            ),
           ),
         ),
-        const SizedBox(height: 8),
         Container(
-          width: double.infinity,
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.surface,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Theme.of(context).colorScheme.outline),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.3),
+              width: 1.5,
+            ),
           ),
-          child: _categories.isEmpty
-              ? Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Text(
-                    'loading_categories'.tr(),
-                    style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
-                  ),
-                )
-              : DropdownButtonHideUnderline(
-                  child: DropdownButton<CategoryModel?>(
-                    value: _selectedCategory,
-                    isExpanded: true,
-                    hint: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Text('select_category_optional'.tr()),
-                    ),
-                    items: [
-                      DropdownMenuItem<CategoryModel?>(
-                        value: null,
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          child: Text('no_category'.tr()),
-                        ),
-                      ),
-                      ..._categories.map((category) {
-                        return DropdownMenuItem<CategoryModel?>(
-                          value: category,
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            child: Row(
-                              children: [
-                                Container(
-                                  width: 32,
-                                  height: 32,
-                                  decoration: BoxDecoration(
-                                    color: _parseColor(category.color).withOpacity(0.1),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Center(
-                                    child: Text(
-                                      category.icon,
-                                      style: const TextStyle(fontSize: 16),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Text(category.name),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<CategoryModel>(
+              isExpanded: true,
+              value: _selectedCategory,
+              hint: Text(
+                'select_category'.tr(),
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                ),
+              ),
+              icon: Icon(
+                Icons.keyboard_arrow_down_rounded,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+              borderRadius: BorderRadius.circular(16),
+              dropdownColor: Theme.of(context).colorScheme.surface,
+              items: [
+                ..._categories.map((CategoryModel category) {
+                  return DropdownMenuItem<CategoryModel>(
+                    value: category,
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 36,
+                          height: 36,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                _parseColor(category.color).withValues(alpha: 0.15),
+                                _parseColor(category.color).withValues(alpha: 0.08),
                               ],
                             ),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                              color: _parseColor(category.color).withValues(alpha: 0.3),
+                              width: 1,
+                            ),
                           ),
-                        );
-                      }).toList(),
-                    ],
-                    onChanged: (CategoryModel? newValue) {
-                      print('Category selected: ${newValue?.name ?? 'None'} (ID: ${newValue?.id})');
-                      setState(() {
-                        _selectedCategory = newValue;
-                        _isBankingCategory = newValue?.name == 'Bankacılık';
-                        
-                        // Initialize one IBAN field if banking is selected and list is empty
-                        if (_isBankingCategory && _ibanControllers.isEmpty) {
-                          _ibanControllers.add(TextEditingController());
-                        }
-                      });
-                    },
-                  ),
-                ),
+                          child: Center(
+                            child: Text(
+                              category.icon,
+                              style: const TextStyle(fontSize: 18),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          category.name,
+                          style: Theme.of(context).textTheme.bodyLarge,
+                        ),
+                      ],
+                    ),
+                  );
+                }).toList(),
+              ],
+              onChanged: (CategoryModel? newValue) {
+                setState(() {
+                  _selectedCategory = newValue;
+                  _isBankingCategory = newValue?.name == 'Bankacılık';
+                  
+                  if (_isBankingCategory && _ibanControllers.isEmpty) {
+                    _ibanControllers.add(TextEditingController());
+                  }
+                });
+              },
+            ),
+          ),
         ),
       ],
     );
   }
+
+
 
   Color _parseColor(String colorString) {
     try {
@@ -493,11 +505,59 @@ class _AddPasswordPageState extends State<AddPasswordPage> {
     }
   }
 
+  // Modern Section Card Builder
+  Widget _buildSectionCard({
+    required String title,
+    required List<Widget> children,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Theme.of(context).colorScheme.surface,
+            Theme.of(context).colorScheme.surfaceVariant.withValues(alpha: 0.3),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.5),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.05),
+            blurRadius: 20,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).colorScheme.primary,
+                letterSpacing: 0.5,
+              ),
+            ),
+            const SizedBox(height: 20),
+            ...children,
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildTextField({
     required TextEditingController controller,
     required String label,
     required String hint,
-    required IconData icon,
     String? Function(String?)? validator,
     bool obscureText = false,
     Widget? suffixIcon,
@@ -509,14 +569,18 @@ class _AddPasswordPageState extends State<AddPasswordPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: Theme.of(context).textTheme.labelLarge?.copyWith(
-            fontWeight: FontWeight.w600,
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
+        Padding(
+          padding: const EdgeInsets.only(left: 4, bottom: 10),
+          child: Text(
+            label,
+            style: Theme.of(context).textTheme.labelLarge?.copyWith(
+              fontWeight: FontWeight.w600,
+              color: Theme.of(context).colorScheme.onSurface,
+              fontSize: 13,
+              letterSpacing: 0.3,
+            ),
           ),
         ),
-        const SizedBox(height: 8),
         TextFormField(
           controller: controller,
           validator: validator,
@@ -525,22 +589,43 @@ class _AddPasswordPageState extends State<AddPasswordPage> {
           maxLines: maxLines,
           maxLength: maxLength,
           inputFormatters: inputFormatters,
+          style: Theme.of(context).textTheme.bodyLarge,
           decoration: InputDecoration(
             hintText: hint,
-            prefixIcon: Icon(icon, color: Theme.of(context).colorScheme.onSurfaceVariant),
+            hintStyle: TextStyle(
+              color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+            ),
             suffixIcon: suffixIcon,
             counterText: '',
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Theme.of(context).colorScheme.outline),
-            ),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+            border: InputBorder.none,
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Theme.of(context).colorScheme.outline),
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide(
+                color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.3),
+                width: 1.5,
+              ),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Theme.of(context).colorScheme.primary),
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide(
+                color: Theme.of(context).colorScheme.primary,
+                width: 2,
+              ),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide(
+                color: Theme.of(context).colorScheme.error,
+                width: 1.5,
+              ),
+            ),
+            focusedErrorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide(
+                color: Theme.of(context).colorScheme.error,
+                width: 2,
+              ),
             ),
             filled: true,
             fillColor: Theme.of(context).colorScheme.surface,

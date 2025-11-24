@@ -25,27 +25,38 @@ class PasswordCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(20),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(18),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Header Row
               Row(
                 children: [
-                  // Website Favicon/Icon
+                  // Website Favicon/Icon - More rounded, softer shadow
                   Container(
-                    width: 48,
-                    height: 48,
+                    width: 52,
+                    height: 52,
                     decoration: BoxDecoration(
-                      color: _getCategoryColor().withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(12),
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          _getCategoryColor().withValues(alpha: 0.15),
+                          _getCategoryColor().withValues(alpha: 0.08),
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: _getCategoryColor().withValues(alpha: 0.2),
+                        width: 1,
+                      ),
                     ),
                     child: Center(
                       child: Text(
                         password.category.icon,
-                        style: const TextStyle(fontSize: 24),
+                        style: const TextStyle(fontSize: 26),
                       ),
                     ),
                   ),
@@ -85,27 +96,28 @@ class PasswordCard extends StatelessWidget {
                       IconButton(
                         icon: Icon(
                           password.isFavorite ? Icons.favorite : Icons.favorite_border,
-                          color: password.isFavorite ? AppColors.error : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
-                          size: 20,
+                          color: password.isFavorite ? AppColors.categoryPink : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4),
+                          size: 22,
                         ),
                         onPressed: onToggleFavorite,
                         tooltip: password.isFavorite ? 'remove_from_favorites'.tr() : 'add_to_favorites'.tr(),
                         constraints: const BoxConstraints(
-                          minWidth: 32,
-                          minHeight: 32,
+                          minWidth: 36,
+                          minHeight: 36,
                         ),
                         padding: EdgeInsets.zero,
                       ),
                       IconButton(
-                        icon: const Icon(
+                        icon: Icon(
                           Icons.copy_outlined,
-                          size: 20,
+                          size: 22,
+                          color: AppColors.primaryBlue,
                         ),
                         onPressed: onCopyPassword,
                         tooltip: 'copy_password'.tr(),
                         constraints: const BoxConstraints(
-                          minWidth: 32,
-                          minHeight: 32,
+                          minWidth: 36,
+                          minHeight: 36,
                         ),
                         padding: EdgeInsets.zero,
                       ),
@@ -143,18 +155,30 @@ class PasswordCard extends StatelessWidget {
               // Bottom Row: Category and Last Accessed
               Row(
                 children: [
-                  // Category Badge
+                  // Category Badge - More modern pill style
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
-                      color: _getCategoryColor().withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(6),
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          _getCategoryColor().withValues(alpha: 0.15),
+                          _getCategoryColor().withValues(alpha: 0.08),
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: _getCategoryColor().withValues(alpha: 0.3),
+                        width: 1,
+                      ),
                     ),
                     child: Text(
                       password.category.displayName,
                       style: Theme.of(context).textTheme.labelSmall?.copyWith(
                         color: _getCategoryColor(),
-                        fontWeight: FontWeight.w500,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0.3,
                       ),
                     ),
                   ),
@@ -198,19 +222,19 @@ class PasswordCard extends StatelessWidget {
   Color _getCategoryColor() {
     switch (password.category) {
       case PasswordCategory.social:
-        return AppColors.primaryBlue;
+        return AppColors.categoryLavender; // Soft lavender for social
       case PasswordCategory.banking:
-        return AppColors.success;
+        return AppColors.success; // Soft green
       case PasswordCategory.email:
-        return AppColors.warning;
+        return AppColors.categorySky; // Soft sky blue
       case PasswordCategory.shopping:
-        return AppColors.error;
+        return AppColors.categoryCoral; // Soft coral
       case PasswordCategory.work:
-        return AppColors.secondaryTeal;
+        return AppColors.categoryMint; // Soft mint
       case PasswordCategory.entertainment:
-        return const Color(0xFF9C27B0); // Purple
+        return AppColors.categoryPurple; // Soft purple
       case PasswordCategory.other:
-        return AppColors.grey600;
+        return AppColors.categoryPeach; // Soft peach
     }
   }
 }

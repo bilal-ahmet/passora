@@ -8,7 +8,8 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/app_utils.dart';
 import '../../../../shared/widgets/custom_button.dart';
 import '../../domain/entities/password_entity.dart';
-import 'edit_password_page.dart';
+import '../../data/models/password_model.dart';
+import 'add_password_page.dart';
 
 class PasswordDetailsPage extends StatefulWidget {
   final PasswordEntity password;
@@ -89,10 +90,23 @@ class _PasswordDetailsPageState extends State<PasswordDetailsPage> {
   }
 
   void _editPassword() async {
+    // Convert PasswordEntity to PasswordModel for editing
+    final passwordModel = PasswordModel(
+      id: int.tryParse(widget.password.id),
+      title: widget.password.title,
+      username: widget.password.username,
+      password: widget.password.password,
+      website: widget.password.website,
+      notes: widget.password.notes,
+      categoryId: null, // Will be set from category in AddPasswordPage
+      createdAt: widget.password.createdAt,
+      updatedAt: DateTime.now(),
+    );
+    
     final result = await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => EditPasswordPage(password: widget.password),
+        builder: (context) => AddPasswordPage(editingPassword: passwordModel),
       ),
     );
 
@@ -506,19 +520,19 @@ class _PasswordDetailsPageState extends State<PasswordDetailsPage> {
   Color _getCategoryColor() {
     switch (widget.password.category) {
       case PasswordCategory.social:
-        return AppColors.primaryBlue;
+        return AppColors.categoryLavender; // Soft lavender for social
       case PasswordCategory.banking:
-        return AppColors.success;
+        return AppColors.success; // Soft green
       case PasswordCategory.email:
-        return AppColors.warning;
+        return AppColors.categorySky; // Soft sky blue
       case PasswordCategory.shopping:
-        return AppColors.error;
+        return AppColors.categoryCoral; // Soft coral
       case PasswordCategory.work:
-        return AppColors.secondaryTeal;
+        return AppColors.categoryMint; // Soft mint
       case PasswordCategory.entertainment:
-        return const Color(0xFF9C27B0);
+        return AppColors.categoryPurple; // Soft purple
       case PasswordCategory.other:
-        return AppColors.grey600;
+        return AppColors.categoryPeach; // Soft peach
     }
   }
 

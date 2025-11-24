@@ -2,47 +2,77 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppColors {
-  // Primary Colors
-  static const Color primaryBlue = Color(0xFF2196F3);
-  static const Color primaryBlueLight = Color(0xFF64B5F6);
-  static const Color primaryBlueDark = Color(0xFF1976D2);
+  // Primary Colors - Soft Lavender Blue
+  static const Color primaryBlue = Color(0xFF9BA4F5);
+  static const Color primaryBlueLight = Color(0xFFB8C0FF);
+  static const Color primaryBlueDark = Color(0xFF7D87E8);
   
-  // Secondary Colors
-  static const Color secondaryTeal = Color(0xFF009688);
-  static const Color secondaryTealLight = Color(0xFF4DB6AC);
-  static const Color secondaryTealDark = Color(0xFF00695C);
+  // Secondary Colors - Soft Mint/Teal
+  static const Color secondaryTeal = Color(0xFF7FDCCC);
+  static const Color secondaryTealLight = Color(0xFFA3EBE0);
+  static const Color secondaryTealDark = Color(0xFF5FCDB9);
   
-  // Neutral Colors
-  static const Color white = Color(0xFFFFFFFF);
-  static const Color black = Color(0xFF000000);
-  static const Color grey50 = Color(0xFFFAFAFA);
-  static const Color grey100 = Color(0xFFF5F5F5);
-  static const Color grey200 = Color(0xFFEEEEEE);
-  static const Color grey300 = Color(0xFFE0E0E0);
-  static const Color grey400 = Color(0xFFBDBDBD);
-  static const Color grey500 = Color(0xFF9E9E9E);
-  static const Color grey600 = Color(0xFF757575);
-  static const Color grey700 = Color(0xFF616161);
-  static const Color grey800 = Color(0xFF424242);
-  static const Color grey900 = Color(0xFF212121);
+  // Accent Colors - Soft Coral/Peach
+  static const Color accentCoral = Color(0xFFFFB4A9);
+  static const Color accentCoralLight = Color(0xFFFFCFC7);
+  static const Color accentCoralDark = Color(0xFFFF9B8C);
   
-  // Status Colors
-  static const Color success = Color(0xFF4CAF50);
-  static const Color warning = Color(0xFFFF9800);
-  static const Color error = Color(0xFFF44336);
-  static const Color info = Color(0xFF2196F3);
+  // Accent Colors - Soft Lilac
+  static const Color accentLilac = Color(0xFFD4BBFF);
+  static const Color accentLilacLight = Color(0xFFE5D5FF);
+  static const Color accentLilacDark = Color(0xFFC3A0FF);
   
-  // Password Strength Colors
-  static const Color weak = Color(0xFFF44336);
-  static const Color medium = Color(0xFFFF9800);
-  static const Color strong = Color(0xFF4CAF50);
-  static const Color veryStrong = Color(0xFF2E7D32);
+  // Neutral Colors - Warmer tones
+  static const Color white = Color(0xFFFFFBFE);
+  static const Color black = Color(0xFF1C1B1F);
+  static const Color grey50 = Color(0xFFFAF8FC);
+  static const Color grey100 = Color(0xFFF3EFF5);
+  static const Color grey200 = Color(0xFFEDE9EF);
+  static const Color grey300 = Color(0xFFDDD8DF);
+  static const Color grey400 = Color(0xFFC4BFC8);
+  static const Color grey500 = Color(0xFFA8A3AC);
+  static const Color grey600 = Color(0xFF8B8791);
+  static const Color grey700 = Color(0xFF6F6B76);
+  static const Color grey800 = Color(0xFF4A4650);
+  static const Color grey900 = Color(0xFF2A2730);
   
-  // Dark Theme Colors
-  static const Color darkBackground = Color(0xFF121212);
-  static const Color darkSurface = Color(0xFF1E1E1E);
-  static const Color darkCard = Color(0xFF2D2D2D);
-  static const Color darkDivider = Color(0xFF3D3D3D);
+  // Status Colors - Soft & Pastel
+  static const Color success = Color(0xFF90E0AE);
+  static const Color successLight = Color(0xFFB5EDCA);
+  static const Color successDark = Color(0xFF6DD492);
+  
+  static const Color warning = Color(0xFFFFD89C);
+  static const Color warningLight = Color(0xFFFFE5BC);
+  static const Color warningDark = Color(0xFFFFCC7D);
+  
+  static const Color error = Color(0xFFFFB4AB);
+  static const Color errorLight = Color(0xFFFFCFC7);
+  static const Color errorDark = Color(0xFFFF9B8C);
+  
+  static const Color info = Color(0xFF9DD9FF);
+  static const Color infoLight = Color(0xFFBDE7FF);
+  static const Color infoDark = Color(0xFF7DCCFF);
+  
+  // Password Strength Colors - Softer versions
+  static const Color weak = Color(0xFFFFB4AB);
+  static const Color medium = Color(0xFFFFD89C);
+  static const Color strong = Color(0xFF90E0AE);
+  static const Color veryStrong = Color(0xFF7FDCCC);
+  
+  // Category Colors - Pastel & Soft
+  static const Color categoryPurple = Color(0xFFD4BBFF);
+  static const Color categoryPink = Color(0xFFFFB4DB);
+  static const Color categoryCoral = Color(0xFFFFB4A9);
+  static const Color categoryPeach = Color(0xFFFFD4B8);
+  static const Color categoryMint = Color(0xFFA3EBE0);
+  static const Color categoryLavender = Color(0xFFB8C0FF);
+  static const Color categorySky = Color(0xFF9DD9FF);
+  
+  // Dark Theme Colors - Softer dark palette
+  static const Color darkBackground = Color(0xFF1A1820);
+  static const Color darkSurface = Color(0xFF252230);
+  static const Color darkCard = Color(0xFF2F2D38);
+  static const Color darkDivider = Color(0xFF3D3A48);
 }
 
 class AppTextStyles {

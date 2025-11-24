@@ -211,5 +211,9 @@
   "no_website": "Web sitesi yok",
   "password_length": "Şifre Uzunluğu",
   "character_types": "Karakter Türleri",
-  "created_date": "Oluşturulma Tarihi"
+  "created_date": "Oluşturulma Tarihi",
+  "basic_information": "Temel Bilgiler",
+  "credentials": "Giriş Bilgileri",
+  "additional_details": "Ek Detaylar",
+  "username_email": "Kullanıcı Adı / E-posta"
 }

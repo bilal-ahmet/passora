@@ -212,5 +212,9 @@
   "no_website": "No website",
   "password_length": "Password Length",
   "character_types": "Character Types",
-  "created_date": "Created"
+  "created_date": "Created",
+  "basic_information": "Basic Information",
+  "credentials": "Credentials",
+  "additional_details": "Additional Details",
+  "username_email": "Username / Email"
 }
