@@ -440,12 +440,18 @@ class _HomePageState extends State<HomePage> {
             child: const Text('Close'),
           ),
           TextButton.icon(
-            onPressed: () => _onEditPassword(password),
+            onPressed: () {
+              Navigator.pop(context); // Close detail dialog first
+              _onEditPassword(password);
+            },
             icon: const Icon(Icons.edit),
             label: const Text('Edit'),
           ),
           TextButton.icon(
-            onPressed: () => _onDeletePassword(password),
+            onPressed: () {
+              Navigator.pop(context); // Close detail dialog first
+              _onDeletePassword(password);
+            },
             icon: Icon(Icons.delete, color: Theme.of(context).colorScheme.error),
             label: Text('Delete', style: TextStyle(color: Theme.of(context).colorScheme.error)),
           ),
@@ -574,12 +580,12 @@ class _HomePageState extends State<HomePage> {
       final confirmed = await showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text('Delete Password'),
-          content: Text('Are you sure you want to delete "${password.title}"?'),
+          title: Text('delete_password_title'.tr()),
+          content: Text('delete_confirmation'.tr()),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: const Text('Cancel'),
+              child: Text('cancel'.tr()),
             ),
             ElevatedButton(
               onPressed: () => Navigator.pop(context, true),
@@ -597,7 +603,13 @@ class _HomePageState extends State<HomePage> {
       
       if (confirmed == true && password.id != null && mounted) {
         print('Deleting password...');
-        context.read<PasswordsCubit>().deletePassword(password.id!);
+        
+        // If we're in a dialog/modal context, close it first
+        if (Navigator.canPop(context)) {
+          Navigator.pop(context);
+        }
+        
+        await context.read<PasswordsCubit>().deletePassword(password.id!);
       }
     } catch (e) {
       print('Error in _onDeletePassword: $e');

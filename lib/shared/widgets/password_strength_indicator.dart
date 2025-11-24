@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/app_utils.dart';
@@ -43,7 +44,7 @@ class PasswordStrengthIndicator extends StatelessWidget {
         if (showLabel && password.isNotEmpty) ...[
           const SizedBox(height: 4),
           Text(
-            strength.label,
+            strength.labelKey.tr(),
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
               color: strengthColor,
               fontWeight: FontWeight.w500,

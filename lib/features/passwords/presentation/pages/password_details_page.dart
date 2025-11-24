@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -276,7 +277,7 @@ class _PasswordDetailsPageState extends State<PasswordDetailsPage> {
                   if (widget.password.lastAccessed != null) ...[
                     const SizedBox(height: 12),
                     _buildMetadataItem(
-                      'Last Accessed',
+                      'last_accessed'.tr(),
                       AppUtils.formatRelativeTime(widget.password.lastAccessed!),
                     ),
                   ],
@@ -466,7 +467,7 @@ class _PasswordDetailsPageState extends State<PasswordDetailsPage> {
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text(
-                  strength.label,
+                  strength.labelKey.tr(),
                   style: Theme.of(context).textTheme.labelSmall?.copyWith(
                     color: _getStrengthColor(strength),
                     fontWeight: FontWeight.w500,

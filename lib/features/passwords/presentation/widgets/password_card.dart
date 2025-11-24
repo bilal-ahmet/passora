@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/app_utils.dart';
@@ -88,7 +89,7 @@ class PasswordCard extends StatelessWidget {
                           size: 20,
                         ),
                         onPressed: onToggleFavorite,
-                        tooltip: password.isFavorite ? 'Remove from favorites' : 'Add to favorites',
+                        tooltip: password.isFavorite ? 'remove_from_favorites'.tr() : 'add_to_favorites'.tr(),
                         constraints: const BoxConstraints(
                           minWidth: 32,
                           minHeight: 32,
@@ -101,7 +102,7 @@ class PasswordCard extends StatelessWidget {
                           size: 20,
                         ),
                         onPressed: onCopyPassword,
-                        tooltip: 'Copy password',
+                        tooltip: 'copy_password'.tr(),
                         constraints: const BoxConstraints(
                           minWidth: 32,
                           minHeight: 32,
@@ -191,7 +192,7 @@ class PasswordCard extends StatelessWidget {
         return domain;
       }
     }
-    return password.website.isNotEmpty ? password.website : 'No website';
+    return password.website.isNotEmpty ? password.website : 'no_website'.tr();
   }
 
   Color _getCategoryColor() {

@@ -197,7 +197,7 @@ class _AddCategoryPageState extends State<AddCategoryPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    _nameController.text.isEmpty ? 'Category Name' : _nameController.text,
+                    _nameController.text.isEmpty ? 'category_name_preview'.tr() : _nameController.text,
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,

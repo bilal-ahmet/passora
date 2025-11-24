@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -149,12 +150,12 @@ class _PasswordGeneratorBottomSheetState extends State<PasswordGeneratorBottomSh
                               IconButton(
                                 icon: const Icon(Icons.copy_outlined),
                                 onPressed: _copyToClipboard,
-                                tooltip: 'Copy password',
+                                tooltip: 'copy_password'.tr(),
                               ),
                               IconButton(
                                 icon: const Icon(Icons.refresh_outlined),
                                 onPressed: _generatePassword,
-                                tooltip: 'Generate new password',
+                                tooltip: 'generate_password'.tr(),
                               ),
                             ],
                           ),
@@ -167,7 +168,7 @@ class _PasswordGeneratorBottomSheetState extends State<PasswordGeneratorBottomSh
                     const SizedBox(height: 24),
 
                     // Length Slider
-                    _buildSectionTitle('Password Length'),
+                    _buildSectionTitle('password_length'.tr()),
                     Row(
                       children: [
                         Text(
@@ -219,7 +220,7 @@ class _PasswordGeneratorBottomSheetState extends State<PasswordGeneratorBottomSh
                     const SizedBox(height: 24),
 
                     // Character Options
-                    _buildSectionTitle('Character Types'),
+                    _buildSectionTitle('character_types'.tr()),
                     _buildSwitchTile(
                       'Uppercase Letters (A-Z)',
                       'ABCDEFGHIJKLMNOPQRSTUVWXYZ',

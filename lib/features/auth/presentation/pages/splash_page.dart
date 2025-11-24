@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/constants/app_strings.dart';
@@ -143,7 +144,7 @@ class _SplashPageState extends State<SplashPage> {
               
               // App Description
               Text(
-                'Secure password manager for everyone',
+                'secure_password_manager'.tr(),
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                   color: AppColors.white.withValues(alpha: 0.9),
                   fontWeight: FontWeight.w400,

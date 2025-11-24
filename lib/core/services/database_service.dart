@@ -36,7 +36,7 @@ class DatabaseService {
       
       _database = await openDatabase(
         path,
-        version: 7,
+        version: 8,
         onCreate: _createDb,
         onUpgrade: _upgradeDb,
       );
@@ -194,7 +194,7 @@ class DatabaseService {
           },
           {
             'name': 'Sosyal',
-            'icon': '👥',
+            'icon': '📱',
             'color': '#1DA1F2',
             'isDefault': 0,
             'createdAt': now.millisecondsSinceEpoch,
@@ -231,6 +231,21 @@ class DatabaseService {
         print('Banking fields added to passwords table');
       } catch (e) {
         print('Error adding banking fields: $e');
+      }
+    }
+    
+    if (oldVersion < 8) {
+      // Update Social category icon to 📱
+      try {
+        await db.update(
+          'categories',
+          {'icon': '📱'},
+          where: 'name = ?',
+          whereArgs: ['Sosyal'],
+        );
+        print('Social category icon updated to 📱');
+      } catch (e) {
+        print('Error updating social category icon: $e');
       }
     }
   }
@@ -1049,7 +1064,7 @@ class DatabaseService {
       },
       {
         'name': 'Sosyal',
-        'icon': '�',
+        'icon': '📱',
         'color': '#1DA1F2',
         'isDefault': 0, // Changed to 0 so they can be deleted
         'createdAt': now.millisecondsSinceEpoch,

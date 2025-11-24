@@ -268,16 +268,6 @@ class _SettingsPageState extends State<SettingsPage> {
               onTap: _showClearDataDialog,
             ),
             
-            const SizedBox(height: 32),
-            
-            // About
-            _buildActionTile(
-              title: 'about'.tr(),
-              subtitle: 'app_info_version'.tr(),
-              icon: Icons.info,
-              onTap: _showAboutDialog,
-            ),
-            
             const SizedBox(height: 40),
           ],
         ),
@@ -385,15 +375,15 @@ class _SettingsPageState extends State<SettingsPage> {
       margin: const EdgeInsets.only(bottom: 8),
       child: ListTile(
         leading: Icon(Icons.timer, color: Theme.of(context).colorScheme.primary),
-        title: const Text('Auto Lock Duration'),
-        subtitle: Text('$_autoLockDuration minutes'),
+        title: Text('auto_lock_duration'.tr()),
+        subtitle: Text('$_autoLockDuration ${'minutes_short'.tr()}'),
         trailing: DropdownButton<int>(
           value: _autoLockDuration,
           underline: const SizedBox(),
           items: [1, 5, 10, 15, 30].map((duration) {
             return DropdownMenuItem(
               value: duration,
-              child: Text('$duration min'),
+              child: Text('$duration ${'minutes_short'.tr()}'),
             );
           }).toList(),
           onChanged: (value) {
@@ -404,32 +394,6 @@ class _SettingsPageState extends State<SettingsPage> {
         ),
       ),
     ).animate().fadeIn(duration: 300.ms).slideX(begin: 0.2, end: 0);
-  }
-
-  void _showAboutDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('About Passora'),
-        content: const Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Passora - Secure Password Manager'),
-            SizedBox(height: 8),
-            Text('Version 1.0.0'),
-            SizedBox(height: 8),
-            Text('A modern and secure password manager built with Flutter.'),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('OK'),
-          ),
-        ],
-      ),
-    );
   }
 
   Future<void> _clearAllData() async {

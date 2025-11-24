@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:crypto/crypto.dart';
 import 'package:intl/intl.dart';
+import 'package:easy_localization/easy_localization.dart' hide DateFormat;
 
 class AppUtils {
   // Password strength calculation
@@ -87,25 +88,25 @@ class AppUtils {
     return DateFormat(pattern).format(date);
   }
   
-  // Format relative time
+  // Format relative time (localized)
   static String formatRelativeTime(DateTime date) {
     final now = DateTime.now();
     final difference = now.difference(date);
     
     if (difference.inDays > 365) {
       final years = (difference.inDays / 365).floor();
-      return '${years} year${years > 1 ? 's' : ''} ago';
+      return 'years_ago'.tr(namedArgs: {'count': years.toString()});
     } else if (difference.inDays > 30) {
       final months = (difference.inDays / 30).floor();
-      return '${months} month${months > 1 ? 's' : ''} ago';
+      return 'months_ago'.tr(namedArgs: {'count': months.toString()});
     } else if (difference.inDays > 0) {
-      return '${difference.inDays} day${difference.inDays > 1 ? 's' : ''} ago';
+      return 'days_ago'.tr(namedArgs: {'count': difference.inDays.toString()});
     } else if (difference.inHours > 0) {
-      return '${difference.inHours} hour${difference.inHours > 1 ? 's' : ''} ago';
+      return 'hours_ago'.tr(namedArgs: {'count': difference.inHours.toString()});
     } else if (difference.inMinutes > 0) {
-      return '${difference.inMinutes} minute${difference.inMinutes > 1 ? 's' : ''} ago';
+      return 'minutes_ago'.tr(namedArgs: {'count': difference.inMinutes.toString()});
     } else {
-      return 'Just now';
+      return 'just_now'.tr();
     }
   }
   
@@ -164,6 +165,21 @@ class AppUtils {
 enum PasswordStrength { weak, medium, strong, veryStrong }
 
 extension PasswordStrengthExtension on PasswordStrength {
+  String get labelKey {
+    switch (this) {
+      case PasswordStrength.weak:
+        return 'weak';
+      case PasswordStrength.medium:
+        return 'medium';
+      case PasswordStrength.strong:
+        return 'strong';
+      case PasswordStrength.veryStrong:
+        return 'very_strong';
+    }
+  }
+  
+  // Deprecated: Use labelKey with .tr() instead
+  @Deprecated('Use labelKey with .tr() for proper localization')
   String get label {
     switch (this) {
       case PasswordStrength.weak:

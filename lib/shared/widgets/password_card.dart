@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import '../../features/passwords/data/models/password_model.dart';
 import '../../features/categories/data/models/category_model.dart';
 
@@ -134,33 +135,33 @@ class PasswordCard extends StatelessWidget {
                       }
                     },
                     itemBuilder: (context) => [
-                      const PopupMenuItem(
+                      PopupMenuItem(
                         value: 'copy',
                         child: Row(
                           children: [
-                            Icon(Icons.copy_outlined, size: 20),
-                            SizedBox(width: 8),
-                            Text('Copy Password'),
+                            const Icon(Icons.copy_outlined, size: 20),
+                            const SizedBox(width: 8),
+                            Text('copy'.tr()),
                           ],
                         ),
                       ),
-                      const PopupMenuItem(
+                      PopupMenuItem(
                         value: 'edit',
                         child: Row(
                           children: [
-                            Icon(Icons.edit, size: 20),
-                            SizedBox(width: 8),
-                            Text('Edit'),
+                            const Icon(Icons.edit, size: 20),
+                            const SizedBox(width: 8),
+                            Text('edit'.tr()),
                           ],
                         ),
                       ),
-                      const PopupMenuItem(
+                      PopupMenuItem(
                         value: 'delete',
                         child: Row(
                           children: [
-                            Icon(Icons.delete, size: 20, color: Colors.red),
-                            SizedBox(width: 8),
-                            Text('Delete', style: TextStyle(color: Colors.red)),
+                            const Icon(Icons.delete, size: 20, color: Colors.red),
+                            const SizedBox(width: 8),
+                            Text('delete'.tr(), style: const TextStyle(color: Colors.red)),
                           ],
                         ),
                       ),
@@ -186,7 +187,7 @@ class PasswordCard extends StatelessWidget {
               // Last updated
               const SizedBox(height: 8),
               Text(
-                'Updated ${_formatDate(password.updatedAt)}',
+                _formatDate(password.updatedAt),
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: Colors.grey[400],
                 ),
@@ -216,8 +217,8 @@ class PasswordCard extends StatelessWidget {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(readText == password.password 
-                ? 'Password copied to clipboard' 
-                : 'Copy failed - verification mismatch'),
+                ? 'copied_to_clipboard'.tr() 
+                : 'copy_failed'.tr()),
               duration: const Duration(seconds: 3),
               backgroundColor: readText == password.password ? Colors.green : Colors.red,
               behavior: SnackBarBehavior.floating,
@@ -230,9 +231,9 @@ class PasswordCard extends StatelessWidget {
         }).catchError((e) {
           print('Password card: Read back failed: $e');
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Copy completed but verification failed'),
-              duration: Duration(seconds: 3),
+            SnackBar(
+              content: Text('copy_failed_verification'.tr()),
+              duration: const Duration(seconds: 3),
               backgroundColor: Colors.red,
               behavior: SnackBarBehavior.floating,
             ),
@@ -243,7 +244,7 @@ class PasswordCard extends StatelessWidget {
         print('Password card: setData failed: $e');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Copy failed: $e'),
+            content: Text('${'copy_failed'.tr()}: $e'),
             duration: const Duration(seconds: 3),
             backgroundColor: Colors.red,
             behavior: SnackBarBehavior.floating,
@@ -254,7 +255,7 @@ class PasswordCard extends StatelessWidget {
       print('Password card: Exception: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Exception: $e'),
+          content: Text('${'exception_occurred'.tr()}: $e'),
           duration: const Duration(seconds: 3),
           backgroundColor: Colors.red,
           behavior: SnackBarBehavior.floating,
@@ -291,13 +292,13 @@ class PasswordCard extends StatelessWidget {
     
     if (difference.inDays == 0) {
       if (difference.inHours == 0) {
-        return '${difference.inMinutes}m ago';
+        return '${difference.inMinutes}${'minute_short'.tr()}';
       }
-      return '${difference.inHours}h ago';
+      return '${difference.inHours}${'hour_short'.tr()}';
     } else if (difference.inDays == 1) {
-      return 'Yesterday';
+      return 'yesterday'.tr();
     } else if (difference.inDays < 7) {
-      return '${difference.inDays}d ago';
+      return '${difference.inDays}${'day_short'.tr()}';
     } else {
       return '${date.day}/${date.month}/${date.year}';
     }

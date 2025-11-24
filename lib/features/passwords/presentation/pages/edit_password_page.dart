@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -8,6 +10,7 @@ import '../../../../shared/widgets/custom_button.dart';
 import '../../../../shared/widgets/custom_text_field.dart';
 import '../../../../shared/widgets/password_strength_indicator.dart';
 import '../../domain/entities/password_entity.dart';
+import '../cubit/passwords_cubit.dart';
 import '../widgets/category_dropdown.dart';
 import '../widgets/password_generator_bottom_sheet.dart';
 
@@ -104,18 +107,32 @@ class _EditPasswordPageState extends State<EditPasswordPage> {
   Future<void> _deletePassword() async {
     setState(() => _isLoading = true);
 
-    // TODO: Implement actual password deletion
-    await Future.delayed(const Duration(seconds: 1));
-
-    if (mounted) {
-      Navigator.pop(context, 'deleted'); // Return 'deleted' to indicate deletion
+    try {
+      // Delete password using cubit (convert String id to int)
+      final passwordId = int.parse(widget.password.id);
+      await context.read<PasswordsCubit>().deletePassword(passwordId);
       
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(AppStrings.passwordDeleted),
-          backgroundColor: AppColors.error,
-        ),
-      );
+      if (mounted) {
+        // Pop until we're back at the home page (pop both edit and detail pages)
+        Navigator.popUntil(context, (route) => route.isFirst);
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(AppStrings.passwordDeleted),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    } catch (e) {
+      setState(() => _isLoading = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to delete password: $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
     }
   }
 
@@ -138,9 +155,9 @@ class _EditPasswordPageState extends State<EditPasswordPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Password'),
+        title: Text('delete_password_title'.tr()),
         content: Text(
-          'Are you sure you want to delete "${widget.password.title}"? This action cannot be undone.',
+          'delete_confirmation'.tr(),
         ),
         actions: [
           TextButton(
@@ -202,7 +219,7 @@ class _EditPasswordPageState extends State<EditPasswordPage> {
                 _isFavorite = !_isFavorite;
               });
             },
-            tooltip: _isFavorite ? 'Remove from favorites' : 'Add to favorites',
+            tooltip: _isFavorite ? 'remove_from_favorites'.tr() : 'add_to_favorites'.tr(),
           ),
           PopupMenuButton<String>(
             onSelected: (value) {
@@ -211,13 +228,13 @@ class _EditPasswordPageState extends State<EditPasswordPage> {
               }
             },
             itemBuilder: (context) => [
-              const PopupMenuItem(
+              PopupMenuItem(
                 value: 'delete',
                 child: Row(
                   children: [
-                    Icon(Icons.delete_outline, color: AppColors.error),
-                    SizedBox(width: 8),
-                    Text('Delete Password', style: TextStyle(color: AppColors.error)),
+                    const Icon(Icons.delete_outline, color: AppColors.error),
+                    const SizedBox(width: 8),
+                    Text('delete_password_title'.tr(), style: const TextStyle(color: AppColors.error)),
                   ],
                 ),
               ),
@@ -251,7 +268,7 @@ class _EditPasswordPageState extends State<EditPasswordPage> {
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        'Password Information',
+                        'password_information'.tr(),
                         style: Theme.of(context).textTheme.titleSmall?.copyWith(
                           fontWeight: FontWeight.w600,
                           color: AppColors.primaryBlue,
@@ -264,13 +281,13 @@ class _EditPasswordPageState extends State<EditPasswordPage> {
                     children: [
                       Expanded(
                         child: _buildInfoItem(
-                          'Created',
+                          'created_date'.tr(),
                           AppUtils.formatDate(widget.password.createdAt),
                         ),
                       ),
                       Expanded(
                         child: _buildInfoItem(
-                          'Last Modified',
+                          'last_modified'.tr(),
                           AppUtils.formatDate(widget.password.updatedAt),
                         ),
                       ),
@@ -279,7 +296,7 @@ class _EditPasswordPageState extends State<EditPasswordPage> {
                   if (widget.password.lastAccessed != null) ...[
                     const SizedBox(height: 8),
                     _buildInfoItem(
-                      'Last Accessed',
+                      'last_accessed'.tr(),
                       AppUtils.formatRelativeTime(widget.password.lastAccessed!),
                     ),
                   ],
@@ -438,7 +455,7 @@ class _EditPasswordPageState extends State<EditPasswordPage> {
 
             // Save Button
             CustomButton(
-              text: 'Save Changes',
+              text: 'save_changes'.tr(),
               onPressed: _isLoading ? null : _saveChanges,
               isLoading: _isLoading,
               width: double.infinity,
