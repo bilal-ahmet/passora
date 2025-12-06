@@ -5,6 +5,7 @@ import 'package:easy_localization/easy_localization.dart';
 import '../../../../shared/widgets/password_card.dart';
 import '../../data/models/password_model.dart';
 import '../cubit/passwords_cubit.dart';
+import '../widgets/statistics_dialog.dart';
 import 'add_password_page.dart';
 import '../../../categories/presentation/pages/categories_page.dart';
 import '../../../categories/presentation/cubit/categories_cubit.dart';
@@ -24,6 +25,9 @@ class _HomePageState extends State<HomePage> {
   bool _showSearchResults = false;
   List<CategoryModel> _categories = [];
   CategoryModel? _selectedCategory;
+  Map<String, dynamic> _statistics = {};
+  List<PasswordModel> _favoritePasswords = [];
+  bool _showFavorites = true; // Favorileri başlangıçta göster
 
   @override
   void initState() {
@@ -33,7 +37,27 @@ class _HomePageState extends State<HomePage> {
       await context.read<CategoriesCubit>().loadCategories();
       await Future.delayed(const Duration(milliseconds: 100)); // Small delay to ensure categories are loaded
       context.read<PasswordsCubit>().loadPasswords();
+      _loadStatistics();
+      _loadFavorites();
     });
+  }
+
+  Future<void> _loadStatistics() async {
+    final stats = await context.read<PasswordsCubit>().getPasswordStatistics();
+    if (mounted) {
+      setState(() {
+        _statistics = stats;
+      });
+    }
+  }
+
+  Future<void> _loadFavorites() async {
+    final favorites = await context.read<PasswordsCubit>().getFavoritePasswords();
+    if (mounted) {
+      setState(() {
+        _favoritePasswords = favorites;
+      });
+    }
   }
 
   @override
@@ -95,6 +119,16 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
           elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.bar_chart_rounded),
+            tooltip: 'statistics'.tr(),
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (context) => StatisticsDialog(statistics: _statistics),
+              );
+            },
+          ),
           actions: [
             IconButton(
               icon: const Icon(Icons.category),
@@ -174,14 +208,34 @@ class _HomePageState extends State<HomePage> {
                       padding: const EdgeInsets.only(right: 8),
                       child: FilterChip(
                         label: const Text('All'),
-                        selected: _selectedCategory == null,
+                        selected: _selectedCategory == null && !_showFavorites,
                         onSelected: (bool selected) {
                           setState(() {
                             _selectedCategory = null;
+                            _showFavorites = false;
                           });
                         },
                         selectedColor: Theme.of(context).primaryColor.withOpacity(0.2),
                         checkmarkColor: Theme.of(context).primaryColor,
+                      ),
+                    ),
+                    // Favorites chip
+                    Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: FilterChip(
+                        avatar: const Icon(Icons.star, size: 16),
+                        label: Text('favorites'.tr()),
+                        selected: _showFavorites,
+                        onSelected: (bool selected) {
+                          setState(() {
+                            _showFavorites = selected;
+                            if (selected) {
+                              _selectedCategory = null;
+                            }
+                          });
+                        },
+                        selectedColor: Colors.amber.withOpacity(0.2),
+                        checkmarkColor: Colors.amber,
                       ),
                     ),
                     // Category chips
@@ -196,6 +250,7 @@ class _HomePageState extends State<HomePage> {
                           onSelected: (bool selected) {
                             setState(() {
                               _selectedCategory = selected ? category : null;
+                              _showFavorites = false;
                             });
                           },
                           selectedColor: _parseColor(category.color).withOpacity(0.2),
@@ -207,12 +262,14 @@ class _HomePageState extends State<HomePage> {
                 ),
             ),
             
-            // Password list
+            // Content area
             Expanded(
               child: BlocConsumer<PasswordsCubit, PasswordsState>(
                 listener: (context, state) {
                   if (state is PasswordsLoaded) {
                     print('Passwords reloaded: ${state.passwords.length} items');
+                    _loadStatistics();
+                    _loadFavorites();
                   }
                 },
                 builder: (context, state) {
@@ -290,6 +347,7 @@ class _HomePageState extends State<HomePage> {
                       );
                     }
                     
+                    // Show passwords list (filtered)
                     return ListView.builder(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       itemCount: passwords.length,
@@ -317,6 +375,7 @@ class _HomePageState extends State<HomePage> {
                             onTap: () => _onPasswordTap(password),
                             onEdit: () => _onEditPassword(password),
                             onDelete: () => _onDeletePassword(password),
+                            onToggleFavorite: () => _onToggleFavorite(password.id!),
                           ),
                         );
                       },
@@ -564,6 +623,8 @@ class _HomePageState extends State<HomePage> {
       if (result == true && mounted) {
         print('Refreshing password list...');
         context.read<PasswordsCubit>().loadPasswords();
+        _loadStatistics();
+        _loadFavorites();
       }
     } catch (e) {
       print('Error in _onEditPassword: $e');
@@ -610,9 +671,21 @@ class _HomePageState extends State<HomePage> {
         }
         
         await context.read<PasswordsCubit>().deletePassword(password.id!);
+        _loadStatistics();
+        _loadFavorites();
       }
     } catch (e) {
       print('Error in _onDeletePassword: $e');
+    }
+  }
+
+  Future<void> _onToggleFavorite(int passwordId) async {
+    try {
+      await context.read<PasswordsCubit>().toggleFavorite(passwordId);
+      _loadFavorites();
+      _loadStatistics();
+    } catch (e) {
+      print('Error toggling favorite: $e');
     }
   }
 
@@ -630,6 +703,20 @@ class _HomePageState extends State<HomePage> {
 
   List<PasswordModel> _filterPasswords(List<PasswordModel> passwords) {
     List<PasswordModel> filtered = passwords;
+
+    // Filter by favorites
+    if (_showFavorites) {
+      filtered = _favoritePasswords;
+      // Apply search on favorites if searching
+      if (_searchQuery.isNotEmpty) {
+        filtered = filtered.where((password) {
+          return password.title.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+                 password.username.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+                 (password.website?.toLowerCase().contains(_searchQuery.toLowerCase()) ?? false);
+        }).toList();
+      }
+      return filtered;
+    }
 
     // Filter by search query
     if (_searchQuery.isNotEmpty) {

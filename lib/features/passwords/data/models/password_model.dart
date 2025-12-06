@@ -8,6 +8,7 @@ class PasswordModel {
   int? categoryId;
   DateTime createdAt;
   DateTime updatedAt;
+  bool isFavorite;
   
   // Banking-specific fields (optional)
   String? cardHolderName;
@@ -26,6 +27,7 @@ class PasswordModel {
     this.categoryId,
     required this.createdAt,
     required this.updatedAt,
+    this.isFavorite = false,
     this.cardHolderName,
     this.cardNumber,
     this.ibanNumbers,
@@ -45,6 +47,7 @@ class PasswordModel {
       'categoryId': categoryId,
       'createdAt': createdAt.millisecondsSinceEpoch,
       'updatedAt': updatedAt.millisecondsSinceEpoch,
+      'isFavorite': isFavorite ? 1 : 0,
       'cardHolderName': cardHolderName,
       'cardNumber': cardNumber,
       'ibanNumbers': ibanNumbers != null ? ibanNumbers!.join('|||') : null, // Store as delimited string
@@ -78,6 +81,7 @@ class PasswordModel {
       categoryId: map['categoryId'] as int?,
       createdAt: DateTime.fromMillisecondsSinceEpoch(map['createdAt'] as int),
       updatedAt: DateTime.fromMillisecondsSinceEpoch(map['updatedAt'] as int),
+      isFavorite: (map['isFavorite'] as int? ?? 0) == 1,
       cardHolderName: map['cardHolderName'] as String?,
       cardNumber: map['cardNumber'] as String?,
       ibanNumbers: ibanString != null && ibanString.isNotEmpty 
@@ -99,6 +103,7 @@ class PasswordModel {
     int? categoryId,
     DateTime? createdAt,
     DateTime? updatedAt,
+    bool? isFavorite,
     String? cardHolderName,
     String? cardNumber,
     List<String>? ibanNumbers,
@@ -115,6 +120,7 @@ class PasswordModel {
       categoryId: categoryId ?? this.categoryId,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      isFavorite: isFavorite ?? this.isFavorite,
       cardHolderName: cardHolderName ?? this.cardHolderName,
       cardNumber: cardNumber ?? this.cardNumber,
       ibanNumbers: ibanNumbers ?? this.ibanNumbers,

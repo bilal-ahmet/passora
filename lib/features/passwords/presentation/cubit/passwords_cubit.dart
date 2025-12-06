@@ -58,4 +58,37 @@ class PasswordsCubit extends Cubit<PasswordsState> {
       return null;
     }
   }
+
+  Future<void> toggleFavorite(int id) async {
+    try {
+      await _databaseService.toggleFavorite(id);
+      // Reload passwords after toggle
+      await loadPasswords();
+    } catch (e) {
+      emit(PasswordsError(e.toString()));
+    }
+  }
+
+  Future<List<PasswordModel>> getFavoritePasswords() async {
+    try {
+      return await _databaseService.getFavoritePasswords();
+    } catch (e) {
+      emit(PasswordsError(e.toString()));
+      return [];
+    }
+  }
+
+  Future<Map<String, dynamic>> getPasswordStatistics() async {
+    try {
+      return await _databaseService.getPasswordStatistics();
+    } catch (e) {
+      emit(PasswordsError(e.toString()));
+      return {
+        'totalCount': 0,
+        'favoriteCount': 0,
+        'categoryCounts': [],
+        'uncategorizedCount': 0,
+      };
+    }
+  }
 }

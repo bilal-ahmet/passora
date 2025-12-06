@@ -216,5 +216,12 @@
   "basic_information": "Basic Information",
   "credentials": "Credentials",
   "additional_details": "Additional Details",
-  "username_email": "Username / Email"
+  "username_email": "Username / Email",
+  "statistics": "Statistics",
+  "total_passwords": "Total Passwords",
+  "favorites": "Favorites",
+  "by_category": "By Category",
+  "uncategorized": "Uncategorized",
+  "no_favorites": "No favorite passwords yet",
+  "add_favorites_hint": "Add your frequently used passwords to favorites"
 }

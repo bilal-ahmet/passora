@@ -9,6 +9,7 @@ class PasswordCard extends StatelessWidget {
   final VoidCallback onTap;
   final Future<void> Function() onEdit;
   final Future<void> Function() onDelete;
+  final Future<void> Function()? onToggleFavorite;
   final CategoryModel? category;
 
   const PasswordCard({
@@ -17,6 +18,7 @@ class PasswordCard extends StatelessWidget {
     required this.onTap,
     required this.onEdit,
     required this.onDelete,
+    this.onToggleFavorite,
     this.category,
   });
 
@@ -110,6 +112,19 @@ class PasswordCard extends StatelessWidget {
                     ),
                   ),
                   
+                  // Favorite button
+                  if (onToggleFavorite != null)
+                    IconButton(
+                      icon: Icon(
+                        password.isFavorite ? Icons.star : Icons.star_border,
+                        color: password.isFavorite ? Colors.amber : Colors.grey,
+                      ),
+                      onPressed: () async {
+                        await onToggleFavorite!();
+                      },
+                      tooltip: password.isFavorite ? 'remove_from_favorites'.tr() : 'add_to_favorites'.tr(),
+                    ),
+                  
                   // More options
                   PopupMenuButton<String>(
                     onSelected: (value) async {
@@ -118,6 +133,11 @@ class PasswordCard extends StatelessWidget {
                         switch (value) {
                           case 'copy':
                             _copyToClipboard(context);
+                            break;
+                          case 'favorite':
+                            if (onToggleFavorite != null) {
+                              await onToggleFavorite!();
+                            }
                             break;
                           case 'edit':
                             print('Calling onEdit from popup menu...');
@@ -145,6 +165,21 @@ class PasswordCard extends StatelessWidget {
                           ],
                         ),
                       ),
+                      if (onToggleFavorite != null)
+                        PopupMenuItem(
+                          value: 'favorite',
+                          child: Row(
+                            children: [
+                              Icon(
+                                password.isFavorite ? Icons.star : Icons.star_border,
+                                size: 20,
+                                color: password.isFavorite ? Colors.amber : null,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(password.isFavorite ? 'remove_from_favorites'.tr() : 'add_to_favorites'.tr()),
+                            ],
+                          ),
+                        ),
                       PopupMenuItem(
                         value: 'edit',
                         child: Row(

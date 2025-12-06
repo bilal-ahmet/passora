@@ -36,7 +36,7 @@ class DatabaseService {
       
       _database = await openDatabase(
         path,
-        version: 8,
+        version: 9,
         onCreate: _createDb,
         onUpgrade: _upgradeDb,
       );
@@ -71,6 +71,7 @@ class DatabaseService {
         categoryId INTEGER,
         createdAt INTEGER NOT NULL,
         updatedAt INTEGER NOT NULL,
+        isFavorite INTEGER NOT NULL DEFAULT 0,
         cardHolderName TEXT,
         cardNumber TEXT,
         ibanNumbers TEXT,
@@ -246,6 +247,16 @@ class DatabaseService {
         print('Social category icon updated to 📱');
       } catch (e) {
         print('Error updating social category icon: $e');
+      }
+    }
+    
+    if (oldVersion < 9) {
+      // Add isFavorite column to passwords table
+      try {
+        await db.execute('ALTER TABLE passwords ADD COLUMN isFavorite INTEGER NOT NULL DEFAULT 0');
+        print('isFavorite field added to passwords table');
+      } catch (e) {
+        print('Error adding isFavorite field: $e');
       }
     }
   }
@@ -676,6 +687,104 @@ class DatabaseService {
       return passwords;
     } catch (e) {
       throw Exception('Failed to search passwords: $e');
+    }
+  }
+
+  /// Toggle favorite status
+  Future<void> toggleFavorite(int id) async {
+    await _ensureInitialized();
+    
+    try {
+      final password = await getPasswordById(id);
+      if (password != null) {
+        await _database!.update(
+          'passwords',
+          {'isFavorite': password.isFavorite ? 0 : 1},
+          where: 'id = ?',
+          whereArgs: [id],
+        );
+      }
+    } catch (e) {
+      throw Exception('Failed to toggle favorite: $e');
+    }
+  }
+
+  /// Get favorite passwords
+  Future<List<PasswordModel>> getFavoritePasswords() async {
+    await _ensureInitialized();
+    
+    try {
+      final List<Map<String, dynamic>> maps = await _database!.query(
+        'passwords',
+        where: 'isFavorite = ?',
+        whereArgs: [1],
+        orderBy: 'updatedAt DESC',
+      );
+      
+      final passwords = <PasswordModel>[];
+      for (final map in maps) {
+        final password = PasswordModel.fromMap(map);
+        try {
+          // Decrypt password
+          password.password = _getEncryptionService().decrypt(password.password);
+          passwords.add(password);
+        } catch (decryptionError) {
+          print('Debug: Failed to decrypt favorite password with ID ${password.id}: $decryptionError');
+          continue;
+        }
+      }
+      
+      return passwords;
+    } catch (e) {
+      throw Exception('Failed to get favorite passwords: $e');
+    }
+  }
+
+  /// Get password statistics
+  Future<Map<String, dynamic>> getPasswordStatistics() async {
+    await _ensureInitialized();
+    
+    try {
+      // Total password count
+      final totalCount = Sqflite.firstIntValue(
+        await _database!.rawQuery('SELECT COUNT(*) FROM passwords')
+      ) ?? 0;
+      
+      // Favorite count
+      final favoriteCount = Sqflite.firstIntValue(
+        await _database!.rawQuery('SELECT COUNT(*) FROM passwords WHERE isFavorite = 1')
+      ) ?? 0;
+      
+      // Category counts
+      final categoryMaps = await _database!.rawQuery('''
+        SELECT c.id, c.name, c.icon, c.color, COUNT(p.id) as count
+        FROM categories c
+        LEFT JOIN passwords p ON c.id = p.categoryId
+        GROUP BY c.id, c.name, c.icon, c.color
+        ORDER BY count DESC
+      ''');
+      
+      final categoryCounts = categoryMaps.map((map) => {
+        'categoryId': map['id'],
+        'categoryName': map['name'],
+        'categoryIcon': map['icon'],
+        'categoryColor': map['color'],
+        'count': map['count'],
+      }).toList();
+      
+      // Uncategorized count
+      final uncategorizedCount = Sqflite.firstIntValue(
+        await _database!.rawQuery('SELECT COUNT(*) FROM passwords WHERE categoryId IS NULL')
+      ) ?? 0;
+      
+      return {
+        'totalCount': totalCount,
+        'favoriteCount': favoriteCount,
+        'categoryCounts': categoryCounts,
+        'uncategorizedCount': uncategorizedCount,
+      };
+    } catch (e) {
+      throw Exception('Failed to get password statistics: $e');
     }
   }
 
