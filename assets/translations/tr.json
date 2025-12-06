@@ -176,6 +176,8 @@
   "cvv": "CVV",
   "iban_numbers": "IBAN Numaraları",
   "add_iban": "IBAN Ekle",
+  "iban_name": "IBAN İsmi",
+  "iban_name_hint": "Örn: Ana Hesap, İş Hesabı",
   "banking_category_cannot_be_deleted": "Bankacılık kategorisi silinemez. Bu kategori bankacılık bilgilerinizi saklamak için gereklidir.",
   "secure_password_manager": "Güvenli şifre yöneticiniz",
   "category_name_preview": "Kategori Adı",

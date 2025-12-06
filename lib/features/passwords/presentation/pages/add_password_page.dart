@@ -29,7 +29,7 @@ class _AddPasswordPageState extends State<AddPasswordPage> {
   final _cardNumberController = TextEditingController();
   final _expiryDateController = TextEditingController();
   final _cvvController = TextEditingController();
-  final List<TextEditingController> _ibanControllers = [];
+  final List<Map<String, TextEditingController>> _ibanControllers = [];
   
   bool _obscurePassword = true;
   bool _isLoading = false;
@@ -56,9 +56,11 @@ class _AddPasswordPageState extends State<AddPasswordPage> {
       
       // Load IBAN numbers
       if (widget.editingPassword!.ibanNumbers != null && widget.editingPassword!.ibanNumbers!.isNotEmpty) {
-        for (var iban in widget.editingPassword!.ibanNumbers!) {
-          final controller = TextEditingController(text: iban);
-          _ibanControllers.add(controller);
+        for (var ibanEntry in widget.editingPassword!.ibanNumbers!) {
+          _ibanControllers.add({
+            'iban': TextEditingController(text: ibanEntry.iban),
+            'name': TextEditingController(text: ibanEntry.name ?? ''),
+          });
         }
       }
       // Category will be loaded after categories are fetched
@@ -80,8 +82,9 @@ class _AddPasswordPageState extends State<AddPasswordPage> {
     _cardNumberController.dispose();
     _expiryDateController.dispose();
     _cvvController.dispose();
-    for (var controller in _ibanControllers) {
-      controller.dispose();
+    for (var controllerMap in _ibanControllers) {
+      controllerMap['iban']!.dispose();
+      controllerMap['name']!.dispose();
     }
     super.dispose();
   }
@@ -103,7 +106,10 @@ class _AddPasswordPageState extends State<AddPasswordPage> {
                 
                 // If banking category and no IBAN controllers, add at least one
                 if (_isBankingCategory && _ibanControllers.isEmpty) {
-                  _ibanControllers.add(TextEditingController());
+                  _ibanControllers.add({
+                    'iban': TextEditingController(),
+                    'name': TextEditingController(),
+                  });
                 }
               } catch (e) {
                 _selectedCategory = null; // Category not found
@@ -282,7 +288,6 @@ class _AddPasswordPageState extends State<AddPasswordPage> {
                                 label: 'cvv'.tr(),
                                 hint: 'CVV',
                                 keyboardType: TextInputType.number,
-                                obscureText: true,
                                 maxLength: 3,
                                 inputFormatters: [
                                   FilteringTextInputFormatter.digitsOnly,
@@ -480,7 +485,10 @@ class _AddPasswordPageState extends State<AddPasswordPage> {
                   _isBankingCategory = newValue?.name == 'Bankacılık';
                   
                   if (_isBankingCategory && _ibanControllers.isEmpty) {
-                    _ibanControllers.add(TextEditingController());
+                    _ibanControllers.add({
+                      'iban': TextEditingController(),
+                      'name': TextEditingController(),
+                    });
                   }
                 });
               },
@@ -637,14 +645,18 @@ class _AddPasswordPageState extends State<AddPasswordPage> {
 
   void _addIbanField() {
     setState(() {
-      _ibanControllers.add(TextEditingController());
+      _ibanControllers.add({
+        'iban': TextEditingController(),
+        'name': TextEditingController(),
+      });
     });
   }
 
   void _removeIbanField(int index) {
     if (_ibanControllers.length > 1) {
       setState(() {
-        _ibanControllers[index].dispose();
+        _ibanControllers[index]['iban']!.dispose();
+        _ibanControllers[index]['name']!.dispose();
         _ibanControllers.removeAt(index);
       });
     }
@@ -653,54 +665,85 @@ class _AddPasswordPageState extends State<AddPasswordPage> {
   List<Widget> _buildIbanFields() {
     return List.generate(_ibanControllers.length, (index) {
       return Padding(
-        padding: const EdgeInsets.only(bottom: 8),
-        child: Row(
+        padding: const EdgeInsets.only(bottom: 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(
-              child: TextFormField(
-                controller: _ibanControllers[index],
-                maxLength: 26,
-                inputFormatters: [
-                  FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z0-9]')),
-                  LengthLimitingTextInputFormatter(26),
-                  TextInputFormatter.withFunction((oldValue, newValue) {
-                    return TextEditingValue(
-                      text: newValue.text.toUpperCase(),
-                      selection: newValue.selection,
-                    );
-                  }),
-                ],
-                decoration: InputDecoration(
-                  hintText: 'TR00 0000 0000 0000 0000 0000 00',
-                  prefixIcon: Icon(Icons.account_balance_outlined, 
-                    color: Theme.of(context).colorScheme.onSurfaceVariant),
-                  counterText: '',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: Theme.of(context).colorScheme.outline),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: Theme.of(context).colorScheme.outline),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: Theme.of(context).colorScheme.primary),
-                  ),
-                  filled: true,
-                  fillColor: Theme.of(context).colorScheme.surface,
+            // IBAN Name field
+            TextFormField(
+              controller: _ibanControllers[index]['name']!,
+              decoration: InputDecoration(
+                labelText: 'iban_name'.tr(),
+                hintText: 'iban_name_hint'.tr(),
+                prefixIcon: Icon(Icons.label_outline, 
+                  color: Theme.of(context).colorScheme.onSurfaceVariant),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Theme.of(context).colorScheme.outline),
                 ),
-                keyboardType: TextInputType.text,
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Theme.of(context).colorScheme.outline),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Theme.of(context).colorScheme.primary),
+                ),
+                filled: true,
+                fillColor: Theme.of(context).colorScheme.surface,
               ),
             ),
-            if (_ibanControllers.length > 1) ...[
-              const SizedBox(width: 8),
-              IconButton(
-                icon: Icon(Icons.delete_outline, 
-                  color: Theme.of(context).colorScheme.error),
-                onPressed: () => _removeIbanField(index),
-              ),
-            ],
+            const SizedBox(height: 8),
+            // IBAN Number field
+            Row(
+              children: [
+                Expanded(
+                  child: TextFormField(
+                    controller: _ibanControllers[index]['iban']!,
+                    maxLength: 26,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z0-9]')),
+                      LengthLimitingTextInputFormatter(26),
+                      TextInputFormatter.withFunction((oldValue, newValue) {
+                        return TextEditingValue(
+                          text: newValue.text.toUpperCase(),
+                          selection: newValue.selection,
+                        );
+                      }),
+                    ],
+                    decoration: InputDecoration(
+                      hintText: 'TR00 0000 0000 0000 0000 0000 00',
+                      prefixIcon: Icon(Icons.account_balance_outlined, 
+                        color: Theme.of(context).colorScheme.onSurfaceVariant),
+                      counterText: '',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Theme.of(context).colorScheme.outline),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Theme.of(context).colorScheme.outline),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Theme.of(context).colorScheme.primary),
+                      ),
+                      filled: true,
+                      fillColor: Theme.of(context).colorScheme.surface,
+                    ),
+                    keyboardType: TextInputType.text,
+                  ),
+                ),
+                if (_ibanControllers.length > 1) ...[
+                  const SizedBox(width: 8),
+                  IconButton(
+                    icon: Icon(Icons.delete_outline, 
+                      color: Theme.of(context).colorScheme.error),
+                    onPressed: () => _removeIbanField(index),
+                  ),
+                ],
+              ],
+            ),
           ],
         ),
       );
@@ -740,15 +783,28 @@ class _AddPasswordPageState extends State<AddPasswordPage> {
 
     print('Saving password with categoryId: ${_selectedCategory?.id} (${_selectedCategory?.name})');
     
-    // Collect IBAN numbers if banking category
-    List<String>? ibanNumbers;
+    // Collect IBAN entries if banking category
+    List<IbanEntry>? ibanNumbers;
     if (_isBankingCategory) {
-      ibanNumbers = _ibanControllers
-          .map((controller) => controller.text.trim())
-          .where((iban) => iban.isNotEmpty)
+      final entries = _ibanControllers
+          .map((controllerMap) {
+            final iban = controllerMap['iban']!.text.trim();
+            final name = controllerMap['name']!.text.trim();
+            if (iban.isNotEmpty) {
+              return IbanEntry(
+                iban: iban,
+                name: name.isEmpty ? null : name,
+              );
+            }
+            return null;
+          })
+          .where((entry) => entry != null)
+          .cast<IbanEntry>()
           .toList();
-      if (ibanNumbers.isEmpty) {
+      if (entries.isEmpty) {
         ibanNumbers = null;
+      } else {
+        ibanNumbers = entries;
       }
     }
     

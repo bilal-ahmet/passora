@@ -159,6 +159,8 @@
   "cvv": "CVV",
   "iban_numbers": "IBAN Numbers",
   "add_iban": "Add IBAN",
+  "iban_name": "IBAN Name",
+  "iban_name_hint": "e.g. Main Account, Business Account",
   "username_email_hint": "Enter your username or email",
   "please_enter_username_email": "Please enter username or email",
   "title_hint": "e.g. Facebook, Gmail, Bank Account",

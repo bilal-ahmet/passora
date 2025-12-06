@@ -1,3 +1,39 @@
+class IbanEntry {
+  final String iban;
+  final String? name;
+
+  IbanEntry({
+    required this.iban,
+    this.name,
+  });
+
+  Map<String, String> toMap() {
+    return {
+      'iban': iban,
+      'name': name ?? '',
+    };
+  }
+
+  static IbanEntry fromMap(Map<String, String> map) {
+    return IbanEntry(
+      iban: map['iban']!,
+      name: map['name']!.isEmpty ? null : map['name'],
+    );
+  }
+
+  String toStorageString() {
+    return '${iban}::${name ?? ''}';
+  }
+
+  static IbanEntry fromStorageString(String str) {
+    final parts = str.split('::');
+    return IbanEntry(
+      iban: parts[0],
+      name: parts.length > 1 && parts[1].isNotEmpty ? parts[1] : null,
+    );
+  }
+}
+
 class PasswordModel {
   int? id;
   String title;
@@ -13,7 +49,7 @@ class PasswordModel {
   // Banking-specific fields (optional)
   String? cardHolderName;
   String? cardNumber;
-  List<String>? ibanNumbers;
+  List<IbanEntry>? ibanNumbers;
   String? expiryDate; // Format: MM/YY
   String? cvv;
 
@@ -50,7 +86,9 @@ class PasswordModel {
       'isFavorite': isFavorite ? 1 : 0,
       'cardHolderName': cardHolderName,
       'cardNumber': cardNumber,
-      'ibanNumbers': ibanNumbers != null ? ibanNumbers!.join('|||') : null, // Store as delimited string
+      'ibanNumbers': ibanNumbers != null 
+          ? ibanNumbers!.map((e) => e.toStorageString()).join('|||') 
+          : null,
       'expiryDate': expiryDate,
       'cvv': cvv,
     };
@@ -85,7 +123,13 @@ class PasswordModel {
       cardHolderName: map['cardHolderName'] as String?,
       cardNumber: map['cardNumber'] as String?,
       ibanNumbers: ibanString != null && ibanString.isNotEmpty 
-          ? ibanString.split('|||') 
+          ? ibanString.split('|||').map((str) {
+              // Backward compatibility: if no '::' separator, treat as old format
+              if (!str.contains('::')) {
+                return IbanEntry(iban: str, name: null);
+              }
+              return IbanEntry.fromStorageString(str);
+            }).toList()
           : null,
       expiryDate: map['expiryDate'] as String?,
       cvv: map['cvv'] as String?,
@@ -106,7 +150,7 @@ class PasswordModel {
     bool? isFavorite,
     String? cardHolderName,
     String? cardNumber,
-    List<String>? ibanNumbers,
+    List<IbanEntry>? ibanNumbers,
     String? expiryDate,
     String? cvv,
   }) {

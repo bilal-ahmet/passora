@@ -470,7 +470,7 @@ class _HomePageState extends State<HomePage> {
                 _buildDetailItem('expiry_date'.tr(), password.expiryDate!),
               
               if (password.cvv != null && password.cvv!.isNotEmpty)
-                _buildDetailItem('cvv'.tr(), password.cvv!, isPassword: true),
+                _buildDetailItem('cvv'.tr(), password.cvv!),
               
               if (password.ibanNumbers != null && password.ibanNumbers!.isNotEmpty) ...[
                 Padding(
@@ -483,9 +483,43 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ),
                 ),
-                ...password.ibanNumbers!.asMap().entries.map((entry) =>
-                  _buildDetailItem('IBAN ${entry.key + 1}', entry.value),
-                ),
+                ...password.ibanNumbers!.map((ibanEntry) {
+                  final displayLabel = ibanEntry.name != null && ibanEntry.name!.isNotEmpty
+                      ? ibanEntry.name!
+                      : 'IBAN';
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (ibanEntry.name != null && ibanEntry.name!.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 4),
+                            child: Text(
+                              displayLabel,
+                              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                color: Theme.of(context).colorScheme.primary,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.surfaceVariant,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Theme.of(context).colorScheme.outline),
+                          ),
+                          child: Text(
+                            ibanEntry.iban,
+                            style: Theme.of(context).textTheme.bodyMedium,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }),
               ],
               
               if (password.notes != null && password.notes!.isNotEmpty)
