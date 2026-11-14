@@ -1157,7 +1157,7 @@ class DatabaseService {
     final defaultCategories = [
       {
         'name': 'Bankacılık',
-        'icon': '🏦',
+        'icon': 'account_balance',
         'color': '#34A853',
         'isDefault': 0, // Changed to 0 so they can be deleted
         'createdAt': now.millisecondsSinceEpoch,
@@ -1165,7 +1165,7 @@ class DatabaseService {
       },
       {
         'name': 'E-posta',
-        'icon': '📧',
+        'icon': 'email',
         'color': '#EA4335',
         'isDefault': 0, // Changed to 0 so they can be deleted
         'createdAt': now.millisecondsSinceEpoch,
@@ -1173,7 +1173,7 @@ class DatabaseService {
       },
       {
         'name': 'Sosyal',
-        'icon': '📱',
+        'icon': 'phone_android',
         'color': '#1DA1F2',
         'isDefault': 0, // Changed to 0 so they can be deleted
         'createdAt': now.millisecondsSinceEpoch,
@@ -1181,7 +1181,7 @@ class DatabaseService {
       },
       {
         'name': 'Alışveriş',
-        'icon': '🛒',
+        'icon': 'shopping_cart',
         'color': '#FF9800',
         'isDefault': 0, // Changed to 0 so they can be deleted
         'createdAt': now.millisecondsSinceEpoch,

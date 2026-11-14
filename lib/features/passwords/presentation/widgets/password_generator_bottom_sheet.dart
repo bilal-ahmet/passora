@@ -332,7 +332,7 @@ class _PasswordGeneratorBottomSheetState extends State<PasswordGeneratorBottomSh
         ),
         value: value,
         onChanged: onChanged,
-        activeColor: AppColors.primaryBlue,
+        activeThumbColor: AppColors.primaryBlue,
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       ),
     );

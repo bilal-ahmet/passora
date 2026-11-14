@@ -1,19 +1,22 @@
+import 'dart:ui';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/services/database_service.dart';
 import '../../../../core/services/csv_import_service.dart';
+import '../../../../shared/widgets/gradient_scaffold.dart';
 import '../../../auth/presentation/pages/change_password_page.dart';
 import '../../../passwords/data/models/password_model.dart';
 import '../../../passwords/presentation/cubit/passwords_cubit.dart';
-import '../cubit/theme_cubit.dart';
-import 'package:share_plus/share_plus.dart';
-import 'package:file_picker/file_picker.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'dart:convert';
+import '../../../paywall/presentation/pages/first_paywall_main_screen.dart';
+import '../../../paywall/presentation/pages/second_paywall_main_screen.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -141,9 +144,11 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const Scaffold(
-        body: Center(
-          child: CircularProgressIndicator(),
+      return GradientScaffold(
+        body: const Center(
+          child: CircularProgressIndicator(
+            color: Colors.white,
+          ),
         ),
       );
     }
@@ -160,130 +165,269 @@ class _SettingsPageState extends State<SettingsPage> {
           });
         }
       },
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text('settings'.tr()),
-          elevation: 0,
-          backgroundColor: Colors.transparent,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: () {
-              Navigator.pop(context, _dataImported ? 'imported' : null);
-            },
+      child: GradientScaffold(
+        body: SafeArea(
+          child: Column(
+            children: [
+              // Modern Header
+              _buildHeader(),
+              
+              // Content
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Premium Paywall Section
+                      _buildPremiumSection(),
+                      
+                      const SizedBox(height: 32),
+                      
+                      // Appearance Section
+                      _buildSectionTitle('appearance'.tr()),
+                      const SizedBox(height: 16),
+                      
+                      // Language Selection
+                      _buildLanguageTile(),
+                      
+                      const SizedBox(height: 32),
+                      
+                      // Security Section
+                      _buildSectionTitle('security'.tr()),
+                      const SizedBox(height: 16),
+                      _buildSwitchTile(
+                        title: 'master_password_protection'.tr(),
+                        subtitle: 'require_master_password_on_startup'.tr(),
+                        icon: Icons.security,
+                        value: _isMasterPasswordEnabled,
+                        onChanged: _saveMasterPasswordSetting,
+                      ),
+                      _buildSwitchTile(
+                        title: 'auto_lock'.tr(),
+                        subtitle: 'automatically_lock_app'.tr(),
+                        icon: Icons.lock_clock,
+                        value: _isAutoLockEnabled,
+                        onChanged: _saveAutoLockSetting,
+                      ),
+                      if (_isAutoLockEnabled) _buildAutoLockDurationTile(),
+                      _buildActionTile(
+                        title: 'change_master_password'.tr(),
+                        subtitle: 'update_your_master_password'.tr(),
+                        icon: Icons.key,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const ChangePasswordPage(),
+                            ),
+                          );
+                        },
+                      ),
+                      
+                      const SizedBox(height: 32),
+                      
+                      // Data Management Section
+                      _buildSectionTitle('data_management'.tr()),
+                      const SizedBox(height: 16),
+                      _buildActionTile(
+                        title: 'import_data'.tr(),
+                        subtitle: 'import_passwords_csv'.tr(),
+                        icon: Icons.file_upload,
+                        onTap: _importData,
+                      ),
+                      _buildActionTile(
+                        title: 'export_google_passwords'.tr(),
+                        subtitle: 'open_google_password_manager'.tr(),
+                        icon: Icons.open_in_new,
+                        iconColor: const Color(0xFF4285F4), // Google Blue
+                        onTap: _openGooglePasswordManager,
+                      ),
+                      _buildActionTile(
+                        title: 'export_data'.tr(),
+                        subtitle: 'export_passwords_json'.tr(),
+                        icon: Icons.file_download,
+                        onTap: _exportData,
+                      ),
+                      _buildActionTile(
+                        title: 'clear_all_data'.tr(),
+                        subtitle: 'permanently_delete_all_data'.tr(),
+                        icon: Icons.delete_forever,
+                        iconColor: AppColors.error,
+                        onTap: _showClearDataDialog,
+                      ),
+                      
+                      const SizedBox(height: 40),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
-        body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Appearance Section
-            _buildSectionTitle('appearance'.tr()),
-            const SizedBox(height: 16),
-            BlocBuilder<ThemeCubit, ThemeState>(
-              builder: (context, state) {
-                bool isDark = false;
-                if (state is ThemeLoaded) {
-                  isDark = state.themeMode == ThemeMode.dark;
-                }
-                
-                return _buildSwitchTile(
-                  title: 'dark_mode'.tr(),
-                  subtitle: 'toggle_dark_light_mode'.tr(),
-                  icon: isDark ? Icons.dark_mode : Icons.light_mode,
-                  value: isDark,
-                  onChanged: (value) {
-                    final newTheme = value ? ThemeMode.dark : ThemeMode.light;
-                    context.read<ThemeCubit>().changeTheme(newTheme);
-                  },
-                );
-              },
-            ),
-            
-            // Language Selection
-            _buildLanguageTile(),
-            
-            const SizedBox(height: 32),
-            
-            // Security Section
-            _buildSectionTitle('security'.tr()),
-            const SizedBox(height: 16),
-            _buildSwitchTile(
-              title: 'master_password_protection'.tr(),
-              subtitle: 'require_master_password_on_startup'.tr(),
-              icon: Icons.security,
-              value: _isMasterPasswordEnabled,
-              onChanged: _saveMasterPasswordSetting,
-            ),
-            _buildSwitchTile(
-              title: 'auto_lock'.tr(),
-              subtitle: 'automatically_lock_app'.tr(),
-              icon: Icons.lock_clock,
-              value: _isAutoLockEnabled,
-              onChanged: _saveAutoLockSetting,
-            ),
-            if (_isAutoLockEnabled) _buildAutoLockDurationTile(),
-            _buildActionTile(
-              title: 'change_master_password'.tr(),
-              subtitle: 'update_your_master_password'.tr(),
-              icon: Icons.key,
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const ChangePasswordPage(),
-                  ),
-                );
-              },
-            ),
-            
-            const SizedBox(height: 32),
-            
-            // Data Management Section
-            _buildSectionTitle('data_management'.tr()),
-            const SizedBox(height: 16),
-            _buildActionTile(
-              title: 'import_data'.tr(),
-              subtitle: 'import_passwords_csv'.tr(),
-              icon: Icons.file_upload,
-              onTap: _importData,
-            ),
-            _buildActionTile(
-              title: 'export_google_passwords'.tr(),
-              subtitle: 'open_google_password_manager'.tr(),
-              icon: Icons.open_in_new,
-              iconColor: const Color(0xFF4285F4), // Google Blue
-              onTap: _openGooglePasswordManager,
-            ),
-            _buildActionTile(
-              title: 'export_data'.tr(),
-              subtitle: 'export_passwords_json'.tr(),
-              icon: Icons.file_download,
-              onTap: _exportData,
-            ),
-            _buildActionTile(
-              title: 'clear_all_data'.tr(),
-              subtitle: 'permanently_delete_all_data'.tr(),
-              icon: Icons.delete_forever,
-              onTap: _showClearDataDialog,
-            ),
-            
-            const SizedBox(height: 40),
-          ],
-        ),
       ),
-      ), // Close PopScope
+    );
+  }
+
+  Widget _buildHeader() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Row(
+        children: [
+          // Back Button
+          GestureDetector(
+            onTap: () => Navigator.pop(context, _dataImported ? 'imported' : null),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                child: Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: AppColors.glassWhite,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.glassBorder),
+                  ),
+                  child: const Icon(
+                    Icons.arrow_back,
+                    color: Colors.white,
+                    size: 22,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          
+          const SizedBox(width: 16),
+          
+          // Title
+          Text(
+            'settings'.tr(),
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
   Widget _buildSectionTitle(String title) {
     return Text(
-      title,
-      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-        fontWeight: FontWeight.bold,
-        color: Theme.of(context).colorScheme.primary,
+      title.toUpperCase(),
+      style: TextStyle(
+        fontSize: 13,
+        fontWeight: FontWeight.w600,
+        color: AppColors.textSecondary,
+        letterSpacing: 1.2,
       ),
     ).animate().fadeIn(duration: 300.ms);
+  }
+
+  Widget _buildPremiumSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionTitle('PASSORA PREMIUM'),
+        const SizedBox(height: 16),
+        _buildPremiumTile(
+          title: 'Passora Premium 1',
+          subtitle: 'Birinci paywall tasarımını görüntüle',
+          icon: Icons.workspace_premium,
+          gradientColors: [const Color(0xFFE91E63), const Color(0xFFC2185B)],
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const FirstPaywallMainScreen(),
+              ),
+            );
+          },
+        ),
+        _buildPremiumTile(
+          title: 'Passora Premium 2',
+          subtitle: 'İkinci paywall tasarımını görüntüle',
+          icon: Icons.diamond_outlined,
+          gradientColors: [const Color(0xFF9C27B0), const Color(0xFF7B1FA2)],
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const SecondPaywallMainScreen(),
+              ),
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPremiumTile({
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required List<Color> gradientColors,
+    required VoidCallback onTap,
+  }) {
+    return _buildGlassContainer(
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        leading: Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                gradientColors[0].withValues(alpha: 0.4),
+                gradientColors[1].withValues(alpha: 0.2),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(icon, color: gradientColors[0], size: 20),
+        ),
+        title: Text(
+          title,
+          style: TextStyle(
+            color: gradientColors[0],
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        subtitle: Text(
+          subtitle,
+          style: TextStyle(
+            color: AppColors.textSecondary,
+            fontSize: 12,
+          ),
+        ),
+        trailing: Icon(
+          Icons.chevron_right,
+          color: gradientColors[0].withValues(alpha: 0.7),
+        ),
+        onTap: onTap,
+      ),
+    ).animate().fadeIn(duration: 300.ms).slideX(begin: 0.2, end: 0);
+  }
+
+  Widget _buildGlassContainer({required Widget child}) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(16),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+        child: Container(
+          margin: const EdgeInsets.only(bottom: 8),
+          decoration: BoxDecoration(
+            color: AppColors.glassWhite,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppColors.glassBorder),
+          ),
+          child: child,
+        ),
+      ),
+    );
   }
 
   Widget _buildSwitchTile({
@@ -293,16 +437,44 @@ class _SettingsPageState extends State<SettingsPage> {
     required bool value,
     required ValueChanged<bool> onChanged,
   }) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 8),
+    return _buildGlassContainer(
       child: ListTile(
-        leading: Icon(icon, color: Theme.of(context).colorScheme.primary),
-        title: Text(title),
-        subtitle: Text(subtitle),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        leading: Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                AppColors.primaryPurple.withValues(alpha: 0.3),
+                AppColors.accentPink.withValues(alpha: 0.2),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(icon, color: Colors.white, size: 20),
+        ),
+        title: Text(
+          title,
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        subtitle: Text(
+          subtitle,
+          style: TextStyle(
+            color: AppColors.textSecondary,
+            fontSize: 12,
+          ),
+        ),
         trailing: Switch(
           value: value,
           onChanged: onChanged,
-          activeColor: Theme.of(context).colorScheme.primary,
+          activeThumbColor: AppColors.accentPink,
+          activeTrackColor: AppColors.accentPink.withValues(alpha: 0.3),
+          inactiveThumbColor: Colors.grey,
+          inactiveTrackColor: Colors.grey.withValues(alpha: 0.3),
         ),
       ),
     ).animate().fadeIn(duration: 300.ms).slideX(begin: 0.2, end: 0);
@@ -315,39 +487,104 @@ class _SettingsPageState extends State<SettingsPage> {
     required VoidCallback onTap,
     Color? iconColor,
   }) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 8),
+    return _buildGlassContainer(
       child: ListTile(
-        leading: Icon(
-          icon, 
-          color: iconColor ?? Theme.of(context).colorScheme.primary,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        leading: Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            gradient: iconColor != null
+                ? LinearGradient(
+                    colors: [
+                      iconColor.withValues(alpha: 0.3),
+                      iconColor.withValues(alpha: 0.1),
+                    ],
+                  )
+                : LinearGradient(
+                    colors: [
+                      AppColors.primaryPurple.withValues(alpha: 0.3),
+                      AppColors.accentPink.withValues(alpha: 0.2),
+                    ],
+                  ),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(icon, color: iconColor ?? Colors.white, size: 20),
         ),
-        title: Text(title),
-        subtitle: Text(subtitle),
-        trailing: const Icon(Icons.chevron_right),
+        title: Text(
+          title,
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        subtitle: Text(
+          subtitle,
+          style: TextStyle(
+            color: AppColors.textSecondary,
+            fontSize: 12,
+          ),
+        ),
+        trailing: Icon(
+          Icons.chevron_right,
+          color: AppColors.textSecondary,
+        ),
         onTap: onTap,
       ),
     ).animate().fadeIn(duration: 300.ms).slideX(begin: 0.2, end: 0);
   }
 
   Widget _buildLanguageTile() {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 8),
+    return _buildGlassContainer(
       child: ListTile(
-        leading: Icon(Icons.language, color: Theme.of(context).colorScheme.primary),
-        title: Text('language'.tr()),
-        subtitle: Text(_getCurrentLanguageText()),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        leading: Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                AppColors.primaryPurple.withValues(alpha: 0.3),
+                AppColors.accentPink.withValues(alpha: 0.2),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: const Icon(Icons.language, color: Colors.white, size: 20),
+        ),
+        title: Text(
+          'language'.tr(),
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        subtitle: Text(
+          _getCurrentLanguageText(),
+          style: TextStyle(
+            color: AppColors.textSecondary,
+            fontSize: 12,
+          ),
+        ),
         trailing: DropdownButton<Locale>(
           value: context.locale,
           underline: const SizedBox(),
+          dropdownColor: AppColors.cardBackground,
+          icon: Icon(Icons.arrow_drop_down, color: AppColors.textSecondary),
           items: [
             DropdownMenuItem(
               value: const Locale('en'),
-              child: Text('english'.tr()),
+              child: Text(
+                'english'.tr(),
+                style: const TextStyle(color: Colors.white),
+              ),
             ),
             DropdownMenuItem(
               value: const Locale('tr'),
-              child: Text('turkish'.tr()),
+              child: Text(
+                'turkish'.tr(),
+                style: const TextStyle(color: Colors.white),
+              ),
             ),
           ],
           onChanged: (locale) {
@@ -371,19 +608,49 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Widget _buildAutoLockDurationTile() {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 8),
+    return _buildGlassContainer(
       child: ListTile(
-        leading: Icon(Icons.timer, color: Theme.of(context).colorScheme.primary),
-        title: Text('auto_lock_duration'.tr()),
-        subtitle: Text('$_autoLockDuration ${'minutes_short'.tr()}'),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        leading: Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                AppColors.primaryPurple.withValues(alpha: 0.3),
+                AppColors.accentPink.withValues(alpha: 0.2),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: const Icon(Icons.timer, color: Colors.white, size: 20),
+        ),
+        title: Text(
+          'auto_lock_duration'.tr(),
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        subtitle: Text(
+          '$_autoLockDuration ${'minutes_short'.tr()}',
+          style: TextStyle(
+            color: AppColors.textSecondary,
+            fontSize: 12,
+          ),
+        ),
         trailing: DropdownButton<int>(
           value: _autoLockDuration,
           underline: const SizedBox(),
+          dropdownColor: AppColors.cardBackground,
+          icon: Icon(Icons.arrow_drop_down, color: AppColors.textSecondary),
           items: [1, 5, 10, 15, 30].map((duration) {
             return DropdownMenuItem(
               value: duration,
-              child: Text('$duration ${'minutes_short'.tr()}'),
+              child: Text(
+                '$duration ${'minutes_short'.tr()}',
+                style: const TextStyle(color: Colors.white),
+              ),
             );
           }).toList(),
           onChanged: (value) {
@@ -449,9 +716,9 @@ class _SettingsPageState extends State<SettingsPage> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppColors.grey100,
+                color: Colors.grey.shade200,
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: AppColors.grey300),
+                border: Border.all(color: Colors.grey.shade300),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -463,7 +730,9 @@ class _SettingsPageState extends State<SettingsPage> {
                       Expanded(
                         child: Text(
                           'google_step_1'.tr(),
-                          style: Theme.of(context).textTheme.bodySmall,
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: Colors.black87,
+                          ),
                         ),
                       ),
                     ],
@@ -476,7 +745,9 @@ class _SettingsPageState extends State<SettingsPage> {
                       Expanded(
                         child: Text(
                           'google_step_2'.tr(),
-                          style: Theme.of(context).textTheme.bodySmall,
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: Colors.black87,
+                          ),
                         ),
                       ),
                     ],
@@ -489,7 +760,9 @@ class _SettingsPageState extends State<SettingsPage> {
                       Expanded(
                         child: Text(
                           'google_step_3'.tr(),
-                          style: Theme.of(context).textTheme.bodySmall,
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: Colors.black87,
+                          ),
                         ),
                       ),
                     ],
@@ -608,7 +881,7 @@ class _SettingsPageState extends State<SettingsPage> {
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
+                  color: Colors.black.withValues(alpha: 0.1),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),
@@ -782,7 +1055,7 @@ class _SettingsPageState extends State<SettingsPage> {
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
+                  color: Colors.black.withValues(alpha: 0.1),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),

@@ -22,7 +22,7 @@ class IbanEntry {
   }
 
   String toStorageString() {
-    return '${iban}::${name ?? ''}';
+    return '$iban::${name ?? ''}';
   }
 
   static IbanEntry fromStorageString(String str) {
@@ -86,9 +86,7 @@ class PasswordModel {
       'isFavorite': isFavorite ? 1 : 0,
       'cardHolderName': cardHolderName,
       'cardNumber': cardNumber,
-      'ibanNumbers': ibanNumbers != null 
-          ? ibanNumbers!.map((e) => e.toStorageString()).join('|||') 
-          : null,
+      'ibanNumbers': ibanNumbers?.map((e) => e.toStorageString()).join('|||'),
       'expiryDate': expiryDate,
       'cvv': cvv,
     };

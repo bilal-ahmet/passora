@@ -94,17 +94,13 @@ class PassoraApp extends StatelessWidget {
       ],
       child: BlocBuilder<ThemeCubit, ThemeState>(
         builder: (context, themeState) {
-          ThemeMode themeMode = ThemeMode.system;
-          if (themeState is ThemeLoaded) {
-            themeMode = themeState.themeMode;
-          }
-          
+          // Always use dark theme for the new glassmorphism design
           return MaterialApp(
             title: AppConstants.appName,
             debugShowCheckedModeBanner: false,
-            theme: AppTheme.lightTheme,
+            theme: AppTheme.darkTheme,
             darkTheme: AppTheme.darkTheme,
-            themeMode: themeMode,
+            themeMode: ThemeMode.dark,
             localizationsDelegates: context.localizationDelegates,
             supportedLocales: context.supportedLocales,
             locale: context.locale,

@@ -116,7 +116,7 @@ class CsvImportService {
             title = username;
           } else {
             // Use generic name
-            title = 'Password ${i}';
+            title = 'Password $i';
           }
         }
         

@@ -1,9 +1,10 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/services/database_service.dart';
-import '../../../../shared/widgets/custom_button.dart';
-import '../../../../shared/widgets/custom_text_field.dart';
+import '../../../../shared/widgets/gradient_scaffold.dart';
 
 class ChangePasswordPage extends StatefulWidget {
   const ChangePasswordPage({super.key});
@@ -103,197 +104,333 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Change Master Password'),
-        elevation: 0,
-        backgroundColor: Colors.transparent,
-      ),
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(24.0),
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                minHeight: constraints.maxHeight - 24.0,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  // Header
-                  const Icon(
-                    Icons.key,
-                    size: 80,
-                    color: Colors.blue,
-                  ).animate().fadeIn(duration: 600.ms).scale(),
-                  
-                  const SizedBox(height: 24),
-                  
-                  Text(
-                    'Change Your Master Password',
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                    textAlign: TextAlign.center,
-                  ).animate().fadeIn(duration: 600.ms, delay: 200.ms),
-                  
-                  const SizedBox(height: 8),
-                  
-                  Text(
-                    'Enter your current password and choose a new secure password',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Colors.grey[600],
-                    ),
-                    textAlign: TextAlign.center,
-                  ).animate().fadeIn(duration: 600.ms, delay: 400.ms),
-                  
-                  const SizedBox(height: 40),
-                  
-                  // Form
-                  Form(
-                    key: _formKey,
-                    child: Column(
-                      children: [
-                        // Current Password Field
-                        CustomTextField(
-                          controller: _currentPasswordController,
-                          label: 'Current Master Password',
-                          obscureText: !_isCurrentPasswordVisible,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter your current password';
-                            }
-                            return null;
-                          },
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              _isCurrentPasswordVisible 
-                                  ? Icons.visibility_off 
-                                  : Icons.visibility,
-                            ),
-                            onPressed: () {
-                              setState(() {
-                                _isCurrentPasswordVisible = !_isCurrentPasswordVisible;
-                              });
-                            },
-                          ),
-                        ).animate().fadeIn(duration: 600.ms, delay: 600.ms).slideX(),
-                        
-                        const SizedBox(height: 20),
-                        
-                        // New Password Field
-                        CustomTextField(
-                          controller: _newPasswordController,
-                          label: 'New Master Password',
-                          obscureText: !_isNewPasswordVisible,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter a new password';
-                            }
-                            if (value.length < 8) {
-                              return 'Password must be at least 8 characters long';
-                            }
-                            return null;
-                          },
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              _isNewPasswordVisible 
-                                  ? Icons.visibility_off 
-                                  : Icons.visibility,
-                            ),
-                            onPressed: () {
-                              setState(() {
-                                _isNewPasswordVisible = !_isNewPasswordVisible;
-                              });
-                            },
-                          ),
-                        ).animate().fadeIn(duration: 600.ms, delay: 800.ms).slideX(),
-                        
-                        const SizedBox(height: 20),
-                        
-                        // Confirm Password Field
-                        CustomTextField(
-                          controller: _confirmPasswordController,
-                          label: 'Confirm New Password',
-                          obscureText: !_isConfirmPasswordVisible,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please confirm your new password';
-                            }
-                            if (value != _newPasswordController.text) {
-                              return 'Passwords do not match';
-                            }
-                            return null;
-                          },
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              _isConfirmPasswordVisible 
-                                  ? Icons.visibility_off 
-                                  : Icons.visibility,
-                            ),
-                            onPressed: () {
-                              setState(() {
-                                _isConfirmPasswordVisible = !_isConfirmPasswordVisible;
-                              });
-                            },
-                          ),
-                        ).animate().fadeIn(duration: 600.ms, delay: 1000.ms).slideX(),
-                        
-                        const SizedBox(height: 40),
-                        
-                        // Password Requirements
-                        Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: Colors.blue.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: Colors.blue.withOpacity(0.3),
-                            ),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Password Requirements:',
-                                style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.blue[700],
+    return GradientScaffold(
+      body: SafeArea(
+        child: Column(
+          children: [
+            // Header
+            _buildHeader(),
+            
+            // Content
+            Expanded(
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  return SingleChildScrollView(
+                    padding: const EdgeInsets.all(24.0),
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        minHeight: constraints.maxHeight - 24.0,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          // Icon
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(20),
+                            child: BackdropFilter(
+                              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                              child: Container(
+                                width: 80,
+                                height: 80,
+                                decoration: BoxDecoration(
+                                  gradient: AppColors.fabGradient,
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: const Icon(
+                                  Icons.key,
+                                  size: 40,
+                                  color: Colors.white,
                                 ),
                               ),
-                              const SizedBox(height: 8),
-                              const Text('• At least 8 characters long'),
-                              const Text('• Use a combination of letters, numbers, and symbols'),
-                              const Text('• Avoid common passwords'),
-                              const Text('• Don\'t reuse your current password'),
-                            ],
+                            ),
+                          ).animate().fadeIn(duration: 600.ms).scale(),
+                          
+                          const SizedBox(height: 24),
+                          
+                          const Text(
+                            'Change Your Master Password',
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                            textAlign: TextAlign.center,
+                          ).animate().fadeIn(duration: 600.ms, delay: 200.ms),
+                          
+                          const SizedBox(height: 8),
+                          
+                          Text(
+                            'Enter your current password and choose a new secure password',
+                            style: TextStyle(
+                              color: AppColors.textSecondary,
+                              fontSize: 14,
+                            ),
+                            textAlign: TextAlign.center,
+                          ).animate().fadeIn(duration: 600.ms, delay: 400.ms),
+                          
+                          const SizedBox(height: 40),
+                          
+                          // Form
+                          Form(
+                            key: _formKey,
+                            child: Column(
+                              children: [
+                                // Current Password Field
+                                _buildPasswordField(
+                                  controller: _currentPasswordController,
+                                  label: 'Current Master Password',
+                                  isVisible: _isCurrentPasswordVisible,
+                                  onVisibilityToggle: () {
+                                    setState(() {
+                                      _isCurrentPasswordVisible = !_isCurrentPasswordVisible;
+                                    });
+                                  },
+                                  validator: (value) {
+                                    if (value == null || value.isEmpty) {
+                                      return 'Please enter your current password';
+                                    }
+                                    return null;
+                                  },
+                                ).animate().fadeIn(duration: 600.ms, delay: 600.ms).slideX(),
+                                
+                                const SizedBox(height: 20),
+                                
+                                // New Password Field
+                                _buildPasswordField(
+                                  controller: _newPasswordController,
+                                  label: 'New Master Password',
+                                  isVisible: _isNewPasswordVisible,
+                                  onVisibilityToggle: () {
+                                    setState(() {
+                                      _isNewPasswordVisible = !_isNewPasswordVisible;
+                                    });
+                                  },
+                                  validator: (value) {
+                                    if (value == null || value.isEmpty) {
+                                      return 'Please enter a new password';
+                                    }
+                                    if (value.length < 8) {
+                                      return 'Password must be at least 8 characters long';
+                                    }
+                                    return null;
+                                  },
+                                ).animate().fadeIn(duration: 600.ms, delay: 800.ms).slideX(),
+                                
+                                const SizedBox(height: 20),
+                                
+                                // Confirm Password Field
+                                _buildPasswordField(
+                                  controller: _confirmPasswordController,
+                                  label: 'Confirm New Password',
+                                  isVisible: _isConfirmPasswordVisible,
+                                  onVisibilityToggle: () {
+                                    setState(() {
+                                      _isConfirmPasswordVisible = !_isConfirmPasswordVisible;
+                                    });
+                                  },
+                                  validator: (value) {
+                                    if (value == null || value.isEmpty) {
+                                      return 'Please confirm your new password';
+                                    }
+                                    if (value != _newPasswordController.text) {
+                                      return 'Passwords do not match';
+                                    }
+                                    return null;
+                                  },
+                                ).animate().fadeIn(duration: 600.ms, delay: 1000.ms).slideX(),
+                                
+                                const SizedBox(height: 40),
+                                
+                                // Password Requirements
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(16),
+                                  child: BackdropFilter(
+                                    filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+                                    child: Container(
+                                      padding: const EdgeInsets.all(16),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.primaryPurple.withValues(alpha: 0.2),
+                                        borderRadius: BorderRadius.circular(16),
+                                        border: Border.all(
+                                          color: AppColors.primaryPurple.withValues(alpha: 0.3),
+                                        ),
+                                      ),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            'Password Requirements:',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              color: AppColors.accentPink,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 8),
+                                          Text('• At least 8 characters long', style: TextStyle(color: AppColors.textSecondary)),
+                                          Text('• Use a combination of letters, numbers, and symbols', style: TextStyle(color: AppColors.textSecondary)),
+                                          Text('• Avoid common passwords', style: TextStyle(color: AppColors.textSecondary)),
+                                          Text('• Don\'t reuse your current password', style: TextStyle(color: AppColors.textSecondary)),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ).animate().fadeIn(duration: 600.ms, delay: 1200.ms),
+                              ],
+                            ),
                           ),
-                        ).animate().fadeIn(duration: 600.ms, delay: 1200.ms),
-                      ],
+                          
+                          const SizedBox(height: 40),
+                          
+                          // Change Password Button
+                          Container(
+                            width: double.infinity,
+                            height: 56,
+                            decoration: BoxDecoration(
+                              gradient: AppColors.fabGradient,
+                              borderRadius: BorderRadius.circular(16),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppColors.accentPink.withValues(alpha: 0.3),
+                                  blurRadius: 12,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: ElevatedButton(
+                              onPressed: _isLoading ? null : _handleChangePassword,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.transparent,
+                                shadowColor: Colors.transparent,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                              ),
+                              child: _isLoading
+                                  ? const SizedBox(
+                                      height: 24,
+                                      width: 24,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2.5,
+                                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                      ),
+                                    )
+                                  : const Text(
+                                      'Change Password',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                            ),
+                          ).animate().fadeIn(duration: 600.ms, delay: 1400.ms).slideY(),
+                          
+                          const SizedBox(height: 20),
+                          
+                          // Cancel Button
+                          TextButton(
+                            onPressed: _isLoading ? null : () => Navigator.of(context).pop(),
+                            child: Text(
+                              'Cancel',
+                              style: TextStyle(color: AppColors.textSecondary),
+                            ),
+                          ).animate().fadeIn(duration: 600.ms, delay: 1600.ms),
+                        ],
+                      ),
                     ),
-                  ),
-                  
-                  const SizedBox(height: 40),
-                  
-                  // Change Password Button
-                  CustomButton(
-                    text: 'Change Password',
-                    onPressed: _isLoading ? null : _handleChangePassword,
-                    isLoading: _isLoading,
-                  ).animate().fadeIn(duration: 600.ms, delay: 1400.ms).slideY(),
-                  
-                  const SizedBox(height: 20),
-                  
-                  // Cancel Button
-                  TextButton(
-                    onPressed: _isLoading ? null : () => Navigator.of(context).pop(),
-                    child: const Text('Cancel'),
-                  ).animate().fadeIn(duration: 600.ms, delay: 1600.ms),
-                ],
+                  );
+                },
               ),
             ),
-          );
-        },
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeader() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Row(
+        children: [
+          // Back Button
+          GestureDetector(
+            onTap: () => Navigator.pop(context),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                child: Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: AppColors.glassWhite,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.glassBorder),
+                  ),
+                  child: const Icon(
+                    Icons.arrow_back,
+                    color: Colors.white,
+                    size: 22,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          
+          const SizedBox(width: 16),
+          
+          // Title
+          const Text(
+            'Change Password',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPasswordField({
+    required TextEditingController controller,
+    required String label,
+    required bool isVisible,
+    required VoidCallback onVisibilityToggle,
+    required String? Function(String?) validator,
+  }) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(16),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+        child: Container(
+          decoration: BoxDecoration(
+            color: AppColors.glassWhite,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppColors.glassBorder),
+          ),
+          child: TextFormField(
+            controller: controller,
+            obscureText: !isVisible,
+            validator: validator,
+            style: const TextStyle(color: Colors.white),
+            decoration: InputDecoration(
+              labelText: label,
+              labelStyle: TextStyle(color: AppColors.textSecondary),
+              border: InputBorder.none,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              suffixIcon: IconButton(
+                icon: Icon(
+                  isVisible ? Icons.visibility_off : Icons.visibility,
+                  color: AppColors.textSecondary,
+                ),
+                onPressed: onVisibilityToggle,
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }

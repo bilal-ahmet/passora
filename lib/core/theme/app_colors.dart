@@ -2,6 +2,34 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppColors {
+  // ============================================
+  // NEW DESIGN SYSTEM - Glassmorphism Dark Theme
+  // ============================================
+  
+  // Gradient Background Colors (Main app background)
+  static const Color gradientStart = Color(0xFF0D0B1F);    // Deep dark blue
+  static const Color gradientMiddle = Color(0xFF1A1547);   // Dark purple
+  static const Color gradientEnd = Color(0xFF2D1B4E);      // Rich purple
+  
+  // Alternative gradient for cards
+  static const Color cardGradientStart = Color(0xFF1E1B4B);
+  static const Color cardGradientEnd = Color(0xFF312E81);
+  
+  // Card Background for dropdowns and menus
+  static const Color cardBackground = Color(0xFF1E1B4B);
+  
+  // Primary Purple (used in gradients and accents)
+  static const Color primaryPurple = Color(0xFF7C3AED);
+  
+  // Accent Pink (main accent color for FAB, buttons, highlights)
+  static const Color accentPink = Color(0xFFB388FF);  // Softer lavender purple
+  
+  // Glassmorphism Colors
+  static const Color glassWhite = Color(0x1AFFFFFF);       // 10% white
+  static const Color glassBorder = Color(0x33FFFFFF);      // 20% white border
+  static const Color glassHighlight = Color(0x0DFFFFFF);   // 5% white highlight
+  static const Color glassShadow = Color(0x40000000);      // 25% black shadow
+  
   // Primary Colors - Soft Lavender Blue
   static const Color primaryBlue = Color(0xFF9BA4F5);
   static const Color primaryBlueLight = Color(0xFFB8C0FF);
@@ -21,6 +49,23 @@ class AppColors {
   static const Color accentLilac = Color(0xFFD4BBFF);
   static const Color accentLilacLight = Color(0xFFE5D5FF);
   static const Color accentLilacDark = Color(0xFFC3A0FF);
+  
+  // FAB Gradient Colors (Soft Purple to Deep Purple - more harmonious)
+  static const Color fabGradientStart = Color(0xFF9575CD);  // Soft purple
+  static const Color fabGradientEnd = Color(0xFF7E57C2);    // Deep purple
+  
+  // Category Badge Colors (for new design)
+  static const Color badgeGreen = Color(0xFF10B981);       // Banking, Success
+  static const Color badgePurple = Color(0xFF8B5CF6);      // Shopping
+  static const Color badgePink = Color(0xFFEC4899);        // Social
+  static const Color badgeBlue = Color(0xFF3B82F6);        // Work
+  static const Color badgeOrange = Color(0xFFF59E0B);      // Entertainment
+  
+  // Text Colors for Dark Theme
+  static const Color textPrimary = Color(0xFFFFFFFF);
+  static const Color textSecondary = Color(0xB3FFFFFF);    // 70% white
+  static const Color textTertiary = Color(0x80FFFFFF);     // 50% white
+  static const Color textMuted = Color(0x4DFFFFFF);        // 30% white
   
   // Neutral Colors - Warmer tones
   static const Color white = Color(0xFFFFFBFE);
@@ -68,11 +113,40 @@ class AppColors {
   static const Color categoryLavender = Color(0xFFB8C0FF);
   static const Color categorySky = Color(0xFF9DD9FF);
   
-  // Dark Theme Colors - Softer dark palette
-  static const Color darkBackground = Color(0xFF1A1820);
-  static const Color darkSurface = Color(0xFF252230);
-  static const Color darkCard = Color(0xFF2F2D38);
+  // Dark Theme Colors - Updated for new design
+  static const Color darkBackground = Color(0xFF0D0B1F);
+  static const Color darkSurface = Color(0xFF1A1547);
+  static const Color darkCard = Color(0xFF2D1B4E);
   static const Color darkDivider = Color(0xFF3D3A48);
+  
+  // ============================================
+  // GRADIENT DEFINITIONS
+  // ============================================
+  
+  /// Main background gradient for all screens
+  static const LinearGradient backgroundGradient = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [gradientStart, gradientMiddle, gradientEnd],
+    stops: [0.0, 0.5, 1.0],
+  );
+  
+  /// FAB button gradient (pink to purple)
+  static const LinearGradient fabGradient = LinearGradient(
+    begin: Alignment.centerLeft,
+    end: Alignment.centerRight,
+    colors: [fabGradientStart, fabGradientEnd],
+  );
+  
+  /// Card diagonal gradient overlay
+  static LinearGradient cardOverlayGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [
+      Colors.white.withValues(alpha: 0.1),
+      Colors.white.withValues(alpha: 0.02),
+    ],
+  );
 }
 
 class AppTextStyles {

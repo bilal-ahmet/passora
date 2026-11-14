@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -6,7 +7,7 @@ import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/app_utils.dart';
-import '../../../../shared/widgets/custom_button.dart';
+import '../../../../shared/widgets/gradient_scaffold.dart';
 import '../../domain/entities/password_entity.dart';
 import '../../data/models/password_model.dart';
 import 'add_password_page.dart';
@@ -119,207 +120,331 @@ class _PasswordDetailsPageState extends State<PasswordDetailsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.password.title),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.edit_outlined),
-            onPressed: _editPassword,
-            tooltip: AppStrings.edit,
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+    return GradientScaffold(
+      body: SafeArea(
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header Card with Icon and Title
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    _getCategoryColor(),
-                    _getCategoryColor().withValues(alpha: 0.7),
+            // Header
+            _buildHeader(),
+            
+            // Content
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Header Card with Icon and Title
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: BackdropFilter(
+                        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                _getCategoryColor().withValues(alpha: 0.4),
+                                _getCategoryColor().withValues(alpha: 0.2),
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: _getCategoryColor().withValues(alpha: 0.5),
+                            ),
+                          ),
+                          child: Column(
+                            children: [
+                              Container(
+                                width: 80,
+                                height: 80,
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(
+                                    color: Colors.white.withValues(alpha: 0.3),
+                                  ),
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    widget.password.category.icon,
+                                    style: const TextStyle(fontSize: 40),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                widget.password.title,
+                                style: const TextStyle(
+                                  fontSize: 24,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Text(
+                                  widget.password.category.displayName,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    )
+                        .animate()
+                        .fadeIn(duration: 400.ms)
+                        .slideY(begin: -0.3, end: 0),
+
+                    const SizedBox(height: 24),
+
+                    // Details Section
+                    if (widget.password.website.isNotEmpty)
+                      _buildDetailCard(
+                        icon: Icons.language_outlined,
+                        title: 'Website',
+                        value: widget.password.website,
+                        isUrl: true,
+                        canCopy: true,
+                      )
+                          .animate(delay: 100.ms)
+                          .fadeIn(duration: 300.ms)
+                          .slideX(begin: -0.3, end: 0),
+
+                    if (widget.password.username.isNotEmpty)
+                      _buildDetailCard(
+                        icon: Icons.person_outline,
+                        title: AppStrings.username,
+                        value: widget.password.username,
+                        canCopy: true,
+                      )
+                          .animate(delay: 150.ms)
+                          .fadeIn(duration: 300.ms)
+                          .slideX(begin: -0.3, end: 0),
+
+                    if (widget.password.email.isNotEmpty)
+                      _buildDetailCard(
+                        icon: Icons.email_outlined,
+                        title: AppStrings.emailAddress,
+                        value: widget.password.email,
+                        canCopy: true,
+                      )
+                          .animate(delay: 200.ms)
+                          .fadeIn(duration: 300.ms)
+                          .slideX(begin: -0.3, end: 0),
+
+                    // Password Card
+                    _buildPasswordCard()
+                        .animate(delay: 250.ms)
+                        .fadeIn(duration: 300.ms)
+                        .slideX(begin: -0.3, end: 0),
+
+                    if (widget.password.notes.isNotEmpty)
+                      _buildDetailCard(
+                        icon: Icons.notes_outlined,
+                        title: AppStrings.notes,
+                        value: widget.password.notes,
+                        isMultiline: true,
+                        canCopy: true,
+                      )
+                          .animate(delay: 300.ms)
+                          .fadeIn(duration: 300.ms)
+                          .slideX(begin: -0.3, end: 0),
+
+                    const SizedBox(height: 24),
+
+                    // Metadata Section
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: BackdropFilter(
+                        filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+                        child: Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: AppColors.glassWhite,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: AppColors.glassBorder),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Information',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.accentPink,
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: _buildMetadataItem(
+                                      'Created',
+                                      AppUtils.formatDate(widget.password.createdAt),
+                                    ),
+                                  ),
+                                  Expanded(
+                                    child: _buildMetadataItem(
+                                      'Modified',
+                                      AppUtils.formatDate(widget.password.updatedAt),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              if (widget.password.lastAccessed != null) ...[
+                                const SizedBox(height: 12),
+                                _buildMetadataItem(
+                                  'last_accessed'.tr(),
+                                  AppUtils.formatRelativeTime(widget.password.lastAccessed!),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                      ),
+                    )
+                        .animate(delay: 350.ms)
+                        .fadeIn(duration: 300.ms)
+                        .slideY(begin: 0.3, end: 0),
+
+                    const SizedBox(height: 32),
+
+                    // Edit Button
+                    Container(
+                      width: double.infinity,
+                      height: 56,
+                      decoration: BoxDecoration(
+                        gradient: AppColors.fabGradient,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.accentPink.withValues(alpha: 0.3),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: ElevatedButton.icon(
+                        onPressed: _editPassword,
+                        icon: const Icon(Icons.edit_outlined, color: Colors.white),
+                        label: Text(
+                          AppStrings.edit,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 16,
+                          ),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.transparent,
+                          shadowColor: Colors.transparent,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                      ),
+                    )
+                        .animate(delay: 400.ms)
+                        .fadeIn(duration: 300.ms)
+                        .slideY(begin: 0.3, end: 0),
+
+                    const SizedBox(height: 16),
                   ],
                 ),
-                borderRadius: BorderRadius.circular(16),
               ),
-              child: Column(
-                children: [
-                  Container(
-                    width: 80,
-                    height: 80,
-                    decoration: BoxDecoration(
-                      color: AppColors.white.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Center(
-                      child: Text(
-                        widget.password.category.icon,
-                        style: const TextStyle(fontSize: 40),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    widget.password.title,
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      color: AppColors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: AppColors.white.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      widget.password.category.displayName,
-                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                        color: AppColors.white,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            )
-                .animate()
-                .fadeIn(duration: 400.ms)
-                .slideY(begin: -0.3, end: 0),
-
-            const SizedBox(height: 24),
-
-            // Details Section
-            if (widget.password.website.isNotEmpty)
-              _buildDetailCard(
-                icon: Icons.language_outlined,
-                title: 'Website',
-                value: widget.password.website,
-                isUrl: true,
-                canCopy: true,
-              )
-                  .animate(delay: 100.ms)
-                  .fadeIn(duration: 300.ms)
-                  .slideX(begin: -0.3, end: 0),
-
-            if (widget.password.username.isNotEmpty)
-              _buildDetailCard(
-                icon: Icons.person_outline,
-                title: AppStrings.username,
-                value: widget.password.username,
-                canCopy: true,
-              )
-                  .animate(delay: 150.ms)
-                  .fadeIn(duration: 300.ms)
-                  .slideX(begin: -0.3, end: 0),
-
-            if (widget.password.email.isNotEmpty)
-              _buildDetailCard(
-                icon: Icons.email_outlined,
-                title: AppStrings.emailAddress,
-                value: widget.password.email,
-                canCopy: true,
-              )
-                  .animate(delay: 200.ms)
-                  .fadeIn(duration: 300.ms)
-                  .slideX(begin: -0.3, end: 0),
-
-            // Password Card
-            _buildPasswordCard()
-                .animate(delay: 250.ms)
-                .fadeIn(duration: 300.ms)
-                .slideX(begin: -0.3, end: 0),
-
-            if (widget.password.notes.isNotEmpty)
-              _buildDetailCard(
-                icon: Icons.notes_outlined,
-                title: AppStrings.notes,
-                value: widget.password.notes,
-                isMultiline: true,
-                canCopy: true,
-              )
-                  .animate(delay: 300.ms)
-                  .fadeIn(duration: 300.ms)
-                  .slideX(begin: -0.3, end: 0),
-
-            const SizedBox(height: 24),
-
-            // Metadata Section
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: AppColors.grey50,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.grey200),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Information',
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _buildMetadataItem(
-                          'Created',
-                          AppUtils.formatDate(widget.password.createdAt),
-                        ),
-                      ),
-                      Expanded(
-                        child: _buildMetadataItem(
-                          'Modified',
-                          AppUtils.formatDate(widget.password.updatedAt),
-                        ),
-                      ),
-                    ],
-                  ),
-                  if (widget.password.lastAccessed != null) ...[
-                    const SizedBox(height: 12),
-                    _buildMetadataItem(
-                      'last_accessed'.tr(),
-                      AppUtils.formatRelativeTime(widget.password.lastAccessed!),
-                    ),
-                  ],
-                ],
-              ),
-            )
-                .animate(delay: 350.ms)
-                .fadeIn(duration: 300.ms)
-                .slideY(begin: 0.3, end: 0),
-
-            const SizedBox(height: 32),
-
-            // Edit Button
-            CustomButton(
-              text: AppStrings.edit,
-              onPressed: _editPassword,
-              width: double.infinity,
-              icon: Icons.edit_outlined,
-            )
-                .animate(delay: 400.ms)
-                .fadeIn(duration: 300.ms)
-                .slideY(begin: 0.3, end: 0),
-
-            const SizedBox(height: 16),
+            ),
           ],
         ),
       ),
+    );
+  }
 
+  Widget _buildHeader() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Row(
+        children: [
+          // Back Button
+          GestureDetector(
+            onTap: () => Navigator.pop(context),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                child: Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: AppColors.glassWhite,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.glassBorder),
+                  ),
+                  child: const Icon(
+                    Icons.arrow_back,
+                    color: Colors.white,
+                    size: 22,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          
+          const SizedBox(width: 16),
+          
+          // Title
+          Expanded(
+            child: Text(
+              widget.password.title,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          
+          // Edit Button
+          GestureDetector(
+            onTap: _editPassword,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                child: Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: AppColors.glassWhite,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.glassBorder),
+                  ),
+                  child: const Icon(
+                    Icons.edit_outlined,
+                    color: Colors.white,
+                    size: 22,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -331,63 +456,71 @@ class _PasswordDetailsPageState extends State<PasswordDetailsPage> {
     bool isUrl = false,
     bool isMultiline = false,
   }) {
-    return Container(
-      width: double.infinity,
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.grey200),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(16),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+        child: Container(
+          width: double.infinity,
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: AppColors.glassWhite,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppColors.glassBorder),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(
-                icon,
-                color: AppColors.grey600,
-                size: 20,
+              Row(
+                children: [
+                  Icon(
+                    icon,
+                    color: AppColors.textSecondary,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    title,
+                    style: TextStyle(
+                      color: AppColors.textSecondary,
+                      fontWeight: FontWeight.w500,
+                      fontSize: 12,
+                    ),
+                  ),
+                  const Spacer(),
+                  if (canCopy)
+                    IconButton(
+                      icon: Icon(
+                        Icons.copy_outlined,
+                        size: 18,
+                        color: AppColors.accentPink,
+                      ),
+                      onPressed: () {
+                        _copyToClipboard(value, '$title copied to clipboard');
+                      },
+                      tooltip: 'Copy $title',
+                      constraints: const BoxConstraints(
+                        minWidth: 32,
+                        minHeight: 32,
+                      ),
+                      padding: EdgeInsets.zero,
+                    ),
+                ],
               ),
-              const SizedBox(width: 8),
-              Text(
-                title,
-                style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                  color: AppColors.grey600,
+              const SizedBox(height: 8),
+              SelectableText(
+                value,
+                style: TextStyle(
                   fontWeight: FontWeight.w500,
+                  color: isUrl ? AppColors.accentPink : Colors.white,
+                  decoration: isUrl ? TextDecoration.underline : null,
                 ),
+                maxLines: isMultiline ? null : 1,
               ),
-              const Spacer(),
-              if (canCopy)
-                IconButton(
-                  icon: const Icon(
-                    Icons.copy_outlined,
-                    size: 18,
-                  ),
-                  onPressed: () {
-                    _copyToClipboard(value, '$title copied to clipboard');
-                  },
-                  tooltip: 'Copy $title',
-                  constraints: const BoxConstraints(
-                    minWidth: 32,
-                    minHeight: 32,
-                  ),
-                  padding: EdgeInsets.zero,
-                ),
             ],
           ),
-          const SizedBox(height: 8),
-          SelectableText(
-            value,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              fontWeight: FontWeight.w500,
-              color: isUrl ? AppColors.primaryBlue : null,
-              decoration: isUrl ? TextDecoration.underline : null,
-            ),
-            maxLines: isMultiline ? null : 1,
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -395,102 +528,114 @@ class _PasswordDetailsPageState extends State<PasswordDetailsPage> {
   Widget _buildPasswordCard() {
     final strength = AppUtils.calculatePasswordStrength(widget.password.password);
     
-    return Container(
-      width: double.infinity,
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.grey200),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Icon(
-                Icons.lock_outline,
-                color: AppColors.grey600,
-                size: 20,
-              ),
-              const SizedBox(width: 8),
-              Text(
-                'Password',
-                style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                  color: AppColors.grey600,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              const Spacer(),
-              IconButton(
-                icon: Icon(
-                  _showPassword ? Icons.visibility_off : Icons.visibility,
-                  size: 18,
-                ),
-                onPressed: () {
-                  setState(() {
-                    _showPassword = !_showPassword;
-                  });
-                },
-                tooltip: _showPassword ? AppStrings.hidePassword : AppStrings.showPassword,
-                constraints: const BoxConstraints(
-                  minWidth: 32,
-                  minHeight: 32,
-                ),
-                padding: EdgeInsets.zero,
-              ),
-              IconButton(
-                icon: const Icon(
-                  Icons.copy_outlined,
-                  size: 18,
-                ),
-                onPressed: () {
-                  _copyToClipboard(widget.password.password, AppStrings.passwordCopied);
-                },
-                tooltip: AppStrings.copyPassword,
-                constraints: const BoxConstraints(
-                  minWidth: 32,
-                  minHeight: 32,
-                ),
-                padding: EdgeInsets.zero,
-              ),
-            ],
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(16),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+        child: Container(
+          width: double.infinity,
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: AppColors.glassWhite,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppColors.glassBorder),
           ),
-          const SizedBox(height: 8),
-          SelectableText(
-            _showPassword ? widget.password.password : '•' * widget.password.password.length,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              fontWeight: FontWeight.w500,
-              fontFamily: _showPassword ? 'monospace' : null,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Row(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                '${AppStrings.passwordStrength}: ',
-                style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: AppColors.grey600,
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(
-                  color: _getStrengthColor(strength).withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: Text(
-                  strength.labelKey.tr(),
-                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    color: _getStrengthColor(strength),
-                    fontWeight: FontWeight.w500,
+              Row(
+                children: [
+                  Icon(
+                    Icons.lock_outline,
+                    color: AppColors.textSecondary,
+                    size: 20,
                   ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Password',
+                    style: TextStyle(
+                      color: AppColors.textSecondary,
+                      fontWeight: FontWeight.w500,
+                      fontSize: 12,
+                    ),
+                  ),
+                  const Spacer(),
+                  IconButton(
+                    icon: Icon(
+                      _showPassword ? Icons.visibility_off : Icons.visibility,
+                      size: 18,
+                      color: AppColors.textSecondary,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _showPassword = !_showPassword;
+                      });
+                    },
+                    tooltip: _showPassword ? AppStrings.hidePassword : AppStrings.showPassword,
+                    constraints: const BoxConstraints(
+                      minWidth: 32,
+                      minHeight: 32,
+                    ),
+                    padding: EdgeInsets.zero,
+                  ),
+                  IconButton(
+                    icon: Icon(
+                      Icons.copy_outlined,
+                      size: 18,
+                      color: AppColors.accentPink,
+                    ),
+                    onPressed: () {
+                      _copyToClipboard(widget.password.password, AppStrings.passwordCopied);
+                    },
+                    tooltip: AppStrings.copyPassword,
+                    constraints: const BoxConstraints(
+                      minWidth: 32,
+                      minHeight: 32,
+                    ),
+                    padding: EdgeInsets.zero,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              SelectableText(
+                _showPassword ? widget.password.password : '•' * widget.password.password.length,
+                style: TextStyle(
+                  fontWeight: FontWeight.w500,
+                  fontFamily: _showPassword ? 'monospace' : null,
+                  color: Colors.white,
                 ),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Text(
+                    '${AppStrings.passwordStrength}: ',
+                    style: TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 12,
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: _getStrengthColor(strength).withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      strength.labelKey.tr(),
+                      style: TextStyle(
+                        color: _getStrengthColor(strength),
+                        fontWeight: FontWeight.w500,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -501,16 +646,19 @@ class _PasswordDetailsPageState extends State<PasswordDetailsPage> {
       children: [
         Text(
           label,
-          style: Theme.of(context).textTheme.labelSmall?.copyWith(
-            color: AppColors.grey600,
+          style: TextStyle(
+            color: AppColors.textTertiary,
             fontWeight: FontWeight.w500,
+            fontSize: 12,
           ),
         ),
         const SizedBox(height: 4),
         Text(
           value,
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+          style: const TextStyle(
             fontWeight: FontWeight.w500,
+            color: Colors.white,
+            fontSize: 14,
           ),
         ),
       ],

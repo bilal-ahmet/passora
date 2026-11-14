@@ -1,7 +1,10 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:easy_localization/easy_localization.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../shared/widgets/gradient_scaffold.dart';
 import '../../data/models/password_model.dart';
 import '../cubit/passwords_cubit.dart';
 import '../../../categories/data/models/category_model.dart';
@@ -118,282 +121,327 @@ class _AddPasswordPageState extends State<AddPasswordPage> {
           });
         }
       },
-      child: Scaffold(
-          appBar: AppBar(
-            title: Text(widget.editingPassword != null ? 'edit_password'.tr() : 'add_password'.tr()),
-            leading: IconButton(
-              icon: const Icon(Icons.close),
-              onPressed: () => Navigator.pop(context),
-            ),
-          ),
-        body: BlocListener<PasswordsCubit, PasswordsState>(
-          listener: (context, state) {
-            if (state is PasswordsError) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(state.message),
-                  backgroundColor: Theme.of(context).colorScheme.error,
-                ),
-              );
-              setState(() {
-                _isLoading = false;
-              });
-            }
-          },
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(20),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  // Basic Information Section
-                  _buildSectionCard(
-                    title: 'basic_information'.tr(),
-                    children: [
-                      _buildTextField(
-                        controller: _titleController,
-                        label: 'title'.tr(),
-                        hint: 'title_hint'.tr(),
-                        validator: (value) {
-                          if (value == null || value.trim().isEmpty) {
-                            return 'please_enter_title'.tr();
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 20),
-                      _buildCategorySelector(),
-                    ],
-                  ),
-                  
-                  const SizedBox(height: 20),
-                  
-                  // Credentials Section
-                  _buildSectionCard(
-                    title: 'credentials'.tr(),
-                    children: [
-                      _buildTextField(
-                        controller: _usernameController,
-                        label: 'username_email'.tr(),
-                        hint: 'username_email_hint'.tr(),
-                        validator: null,
-                      ),
-                      const SizedBox(height: 20),
-                      _buildTextField(
-                        controller: _passwordController,
-                        label: 'password'.tr(),
-                        hint: 'password_hint'.tr(),
-                        obscureText: _obscurePassword,
-                        suffixIcon: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              icon: Icon(
-                                _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
-                                size: 20,
+      child: GradientScaffold(
+        body: SafeArea(
+          child: Column(
+            children: [
+              // Modern Header
+              _buildHeader(),
+              
+              // Form Content
+              Expanded(
+                child: BlocListener<PasswordsCubit, PasswordsState>(
+                  listener: (context, state) {
+                    if (state is PasswordsError) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(state.message),
+                          backgroundColor: AppColors.error,
+                        ),
+                      );
+                      setState(() {
+                        _isLoading = false;
+                      });
+                    }
+                  },
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(20),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          // Basic Information Section
+                          _buildSectionCard(
+                            title: 'basic_information'.tr(),
+                            children: [
+                              _buildTextField(
+                                controller: _titleController,
+                                label: 'title'.tr(),
+                                hint: 'title_hint'.tr(),
+                                validator: (value) {
+                                  if (value == null || value.trim().isEmpty) {
+                                    return 'please_enter_title'.tr();
+                                  }
+                                  return null;
+                                },
                               ),
-                              onPressed: () {
-                                setState(() {
-                                  _obscurePassword = !_obscurePassword;
-                                });
-                              },
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.autorenew, size: 20),
-                              onPressed: _generatePassword,
-                            ),
-                          ],
-                        ),
-                        validator: (value) {
-                          if (value == null || value.trim().isEmpty) {
-                            return 'please_enter_password'.tr();
-                          }
-                          if (value.length < 6) {
-                            return 'password_min_length'.tr();
-                          }
-                          return null;
-                        },
-                      ),
-                    ],
-                  ),
-                  
-                  const SizedBox(height: 20),
-                  
-                  // Additional Details Section
-                  _buildSectionCard(
-                    title: 'additional_details'.tr(),
-                    children: [
-                      _buildTextField(
-                        controller: _websiteController,
-                        label: 'website_optional'.tr(),
-                        hint: 'website_hint'.tr(),
-                        keyboardType: TextInputType.url,
-                      ),
-                      const SizedBox(height: 20),
-                      _buildTextField(
-                        controller: _notesController,
-                        label: 'notes_optional'.tr(),
-                        hint: 'notes_hint'.tr(),
-                        maxLines: 4,
-                      ),
-                    ],
-                  ),
-                  
-                  const SizedBox(height: 20),
-                  
-                  // Banking-specific fields (only show if banking category is selected)
-                  if (_isBankingCategory) 
-                    _buildSectionCard(
-                      title: 'banking_info'.tr(),
-                      children: [
-                        _buildTextField(
-                          controller: _cardHolderNameController,
-                          label: 'card_holder_name'.tr(),
-                          hint: 'card_holder_name_hint'.tr(),
-                        ),
-                        const SizedBox(height: 20),
-                        _buildTextField(
-                          controller: _cardNumberController,
-                          label: 'card_number'.tr(),
-                          hint: 'card_number_hint'.tr(),
-                          keyboardType: TextInputType.number,
-                          maxLength: 16,
-                          inputFormatters: [
-                            FilteringTextInputFormatter.digitsOnly,
-                            LengthLimitingTextInputFormatter(16),
-                          ],
-                        ),
-                        const SizedBox(height: 20),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: _buildTextField(
-                                controller: _expiryDateController,
-                                label: 'expiry_date'.tr(),
-                                hint: 'MM/YY',
-                                keyboardType: TextInputType.number,
-                                maxLength: 5,
-                                inputFormatters: [
-                                  FilteringTextInputFormatter.digitsOnly,
-                                  LengthLimitingTextInputFormatter(4),
-                                  _ExpiryDateFormatter(),
-                                ],
+                              const SizedBox(height: 20),
+                              _buildCategorySelector(),
+                            ],
+                          ),
+                          
+                          const SizedBox(height: 20),
+                          
+                          // Credentials Section
+                          _buildSectionCard(
+                            title: 'credentials'.tr(),
+                            children: [
+                              _buildTextField(
+                                controller: _usernameController,
+                                label: 'username_email'.tr(),
+                                hint: 'username_email_hint'.tr(),
+                                validator: null,
                               ),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: _buildTextField(
-                                controller: _cvvController,
-                                label: 'cvv'.tr(),
-                                hint: 'CVV',
-                                keyboardType: TextInputType.number,
-                                maxLength: 3,
-                                inputFormatters: [
-                                  FilteringTextInputFormatter.digitsOnly,
-                                  LengthLimitingTextInputFormatter(3),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 20),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.only(left: 4, bottom: 10),
-                              child: Text(
-                                'iban_numbers'.tr(),
-                                style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                                  fontWeight: FontWeight.w600,
-                                  color: Theme.of(context).colorScheme.onSurface,
-                                  fontSize: 13,
-                                  letterSpacing: 0.3,
+                              const SizedBox(height: 20),
+                              _buildTextField(
+                                controller: _passwordController,
+                                label: 'password'.tr(),
+                                hint: 'password_hint'.tr(),
+                                obscureText: _obscurePassword,
+                                suffixIcon: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    IconButton(
+                                      icon: Icon(
+                                        _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                                        size: 20,
+                                        color: AppColors.textSecondary,
+                                      ),
+                                      onPressed: () {
+                                        setState(() {
+                                          _obscurePassword = !_obscurePassword;
+                                        });
+                                      },
+                                    ),
+                                    IconButton(
+                                      icon: Icon(Icons.autorenew, size: 20, color: AppColors.accentPink),
+                                      onPressed: _generatePassword,
+                                    ),
+                                  ],
                                 ),
+                                validator: (value) {
+                                  if (value == null || value.trim().isEmpty) {
+                                    return 'please_enter_password'.tr();
+                                  }
+                                  if (value.length < 6) {
+                                    return 'password_min_length'.tr();
+                                  }
+                                  return null;
+                                },
                               ),
-                            ),
-                            ..._buildIbanFields(),
-                            const SizedBox(height: 12),
-                            OutlinedButton.icon(
-                              onPressed: _addIbanField,
-                              icon: const Icon(Icons.add, size: 18),
-                              label: Text('add_iban'.tr()),
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: Theme.of(context).colorScheme.primary,
-                                side: BorderSide(
-                                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.5),
+                            ],
+                          ),
+                          
+                          const SizedBox(height: 20),
+                          
+                          // Additional Details Section
+                          _buildSectionCard(
+                            title: 'additional_details'.tr(),
+                            children: [
+                              _buildTextField(
+                                controller: _websiteController,
+                                label: 'website_optional'.tr(),
+                                hint: 'website_hint'.tr(),
+                                keyboardType: TextInputType.url,
+                              ),
+                              const SizedBox(height: 20),
+                              _buildTextField(
+                                controller: _notesController,
+                                label: 'notes_optional'.tr(),
+                                hint: 'notes_hint'.tr(),
+                                maxLines: 4,
+                              ),
+                            ],
+                          ),
+                          
+                          const SizedBox(height: 20),
+                          
+                          // Banking-specific fields (only show if banking category is selected)
+                          if (_isBankingCategory) 
+                            _buildSectionCard(
+                              title: 'banking_info'.tr(),
+                              children: [
+                                _buildTextField(
+                                  controller: _cardHolderNameController,
+                                  label: 'card_holder_name'.tr(),
+                                  hint: 'card_holder_name_hint'.tr(),
                                 ),
+                                const SizedBox(height: 20),
+                                _buildTextField(
+                                  controller: _cardNumberController,
+                                  label: 'card_number'.tr(),
+                                  hint: 'card_number_hint'.tr(),
+                                  keyboardType: TextInputType.number,
+                                  maxLength: 16,
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter.digitsOnly,
+                                    LengthLimitingTextInputFormatter(16),
+                                  ],
+                                ),
+                                const SizedBox(height: 20),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: _buildTextField(
+                                        controller: _expiryDateController,
+                                        label: 'expiry_date'.tr(),
+                                        hint: 'MM/YY',
+                                        keyboardType: TextInputType.number,
+                                        maxLength: 5,
+                                        inputFormatters: [
+                                          FilteringTextInputFormatter.digitsOnly,
+                                          LengthLimitingTextInputFormatter(4),
+                                          _ExpiryDateFormatter(),
+                                        ],
+                                      ),
+                                    ),
+                                    const SizedBox(width: 16),
+                                    Expanded(
+                                      child: _buildTextField(
+                                        controller: _cvvController,
+                                        label: 'cvv'.tr(),
+                                        hint: 'CVV',
+                                        keyboardType: TextInputType.number,
+                                        maxLength: 3,
+                                        inputFormatters: [
+                                          FilteringTextInputFormatter.digitsOnly,
+                                          LengthLimitingTextInputFormatter(3),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 20),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.only(left: 4, bottom: 10),
+                                      child: Text(
+                                        'iban_numbers'.tr(),
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                          color: AppColors.textSecondary,
+                                          fontSize: 13,
+                                          letterSpacing: 0.3,
+                                        ),
+                                      ),
+                                    ),
+                                    ..._buildIbanFields(),
+                                    const SizedBox(height: 12),
+                                    OutlinedButton.icon(
+                                      onPressed: _addIbanField,
+                                      icon: const Icon(Icons.add, size: 18),
+                                      label: Text('add_iban'.tr()),
+                                      style: OutlinedButton.styleFrom(
+                                        foregroundColor: AppColors.accentPink,
+                                        side: BorderSide(
+                                          color: AppColors.accentPink.withValues(alpha: 0.5),
+                                        ),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(12),
+                                        ),
+                                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          
+                          const SizedBox(height: 8),
+                          
+                          // Save button - Modern gradient design
+                          Container(
+                            width: double.infinity,
+                            height: 56,
+                            decoration: BoxDecoration(
+                              gradient: AppColors.fabGradient,
+                              borderRadius: BorderRadius.circular(20),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppColors.accentPink.withValues(alpha: 0.3),
+                                  blurRadius: 12,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: ElevatedButton(
+                              onPressed: _isLoading ? null : _savePassword,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.transparent,
+                                shadowColor: Colors.transparent,
+                                foregroundColor: Colors.white,
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
+                                  borderRadius: BorderRadius.circular(20),
                                 ),
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                padding: const EdgeInsets.symmetric(vertical: 16),
                               ),
+                              child: _isLoading
+                                  ? const SizedBox(
+                                      height: 24,
+                                      width: 24,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2.5,
+                                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                      ),
+                                    )
+                                  : Text(
+                                      widget.editingPassword != null ? 'update_password'.tr() : 'save_password'.tr(),
+                                      style: const TextStyle(
+                                        fontSize: 17,
+                                        fontWeight: FontWeight.w600,
+                                        letterSpacing: 0.5,
+                                      ),
+                                    ),
                             ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  
-                  const SizedBox(height: 8),
-                  
-                  // Save button - Modern gradient design
-                  Container(
-                    width: double.infinity,
-                    height: 56,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Theme.of(context).colorScheme.primary,
-                          Theme.of(context).colorScheme.primary.withValues(alpha: 0.8),
+                          ),
                         ],
                       ),
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
-                          blurRadius: 12,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: ElevatedButton(
-                      onPressed: _isLoading ? null : _savePassword,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.transparent,
-                        shadowColor: Colors.transparent,
-                        foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                      ),
-                      child: _isLoading
-                          ? SizedBox(
-                              height: 24,
-                              width: 24,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2.5,
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                  Theme.of(context).colorScheme.onPrimary,
-                                ),
-                              ),
-                            )
-                          : Text(
-                              widget.editingPassword != null ? 'update_password'.tr() : 'save_password'.tr(),
-                              style: const TextStyle(
-                                fontSize: 17,
-                                fontWeight: FontWeight.w600,
-                                letterSpacing: 0.5,
-                              ),
-                            ),
                     ),
                   ),
-                ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeader() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Row(
+        children: [
+          // Close Button
+          GestureDetector(
+            onTap: () => Navigator.pop(context),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                child: Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: AppColors.glassWhite,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.glassBorder),
+                  ),
+                  child: const Icon(
+                    Icons.close,
+                    color: Colors.white,
+                    size: 22,
+                  ),
+                ),
               ),
             ),
           ),
-        ),
+          
+          const SizedBox(width: 16),
+          
+          // Title
+          Text(
+            widget.editingPassword != null ? 'edit_password'.tr() : 'add_password'.tr(),
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -406,9 +454,9 @@ class _AddPasswordPageState extends State<AddPasswordPage> {
           padding: const EdgeInsets.only(left: 4, bottom: 10),
           child: Text(
             'category'.tr(),
-            style: Theme.of(context).textTheme.labelLarge?.copyWith(
+            style: TextStyle(
               fontWeight: FontWeight.w600,
-              color: Theme.of(context).colorScheme.onSurface,
+              color: AppColors.textSecondary,
               fontSize: 13,
               letterSpacing: 0.3,
             ),
@@ -416,10 +464,10 @@ class _AddPasswordPageState extends State<AddPasswordPage> {
         ),
         Container(
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surface,
+            color: Colors.white.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.3),
+              color: AppColors.glassBorder,
               width: 1.5,
             ),
           ),
@@ -431,15 +479,15 @@ class _AddPasswordPageState extends State<AddPasswordPage> {
               hint: Text(
                 'select_category'.tr(),
                 style: TextStyle(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                  color: AppColors.textTertiary,
                 ),
               ),
               icon: Icon(
                 Icons.keyboard_arrow_down_rounded,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                color: AppColors.textSecondary,
               ),
               borderRadius: BorderRadius.circular(16),
-              dropdownColor: Theme.of(context).colorScheme.surface,
+              dropdownColor: AppColors.cardBackground,
               items: [
                 ..._categories.map((CategoryModel category) {
                   return DropdownMenuItem<CategoryModel>(
@@ -452,32 +500,33 @@ class _AddPasswordPageState extends State<AddPasswordPage> {
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
                               colors: [
+                                _parseColor(category.color).withValues(alpha: 0.3),
                                 _parseColor(category.color).withValues(alpha: 0.15),
-                                _parseColor(category.color).withValues(alpha: 0.08),
                               ],
                             ),
                             borderRadius: BorderRadius.circular(10),
                             border: Border.all(
-                              color: _parseColor(category.color).withValues(alpha: 0.3),
+                              color: _parseColor(category.color).withValues(alpha: 0.5),
                               width: 1,
                             ),
                           ),
                           child: Center(
-                            child: Text(
-                              category.icon,
-                              style: const TextStyle(fontSize: 18),
+                            child: Icon(
+                              _getIconData(category.icon),
+                              size: 18,
+                              color: _parseColor(category.color),
                             ),
                           ),
                         ),
                         const SizedBox(width: 12),
                         Text(
                           category.name,
-                          style: Theme.of(context).textTheme.bodyLarge,
+                          style: const TextStyle(color: Colors.white),
                         ),
                       ],
                     ),
                   );
-                }).toList(),
+                }),
               ],
               onChanged: (CategoryModel? newValue) {
                 setState(() {
@@ -499,6 +548,64 @@ class _AddPasswordPageState extends State<AddPasswordPage> {
     );
   }
 
+  IconData _getIconData(String iconName) {
+    switch (iconName) {
+      case 'folder': return Icons.folder_rounded;
+      case 'lock': return Icons.lock_rounded;
+      case 'account_balance': return Icons.account_balance_rounded;
+      case 'shopping_cart': return Icons.shopping_cart_rounded;
+      case 'email': return Icons.email_rounded;
+      case 'work': return Icons.work_rounded;
+      case 'sports_esports': return Icons.sports_esports_rounded;
+      case 'movie': return Icons.movie_rounded;
+      case 'flight': return Icons.flight_rounded;
+      case 'school': return Icons.school_rounded;
+      case 'local_hospital': return Icons.local_hospital_rounded;
+      case 'restaurant': return Icons.restaurant_rounded;
+      case 'home': return Icons.home_rounded;
+      case 'credit_card': return Icons.credit_card_rounded;
+      case 'phone_android': return Icons.phone_android_rounded;
+      case 'laptop': return Icons.laptop_rounded;
+      case 'music_note': return Icons.music_note_rounded;
+      case 'camera_alt': return Icons.camera_alt_rounded;
+      case 'sports_soccer': return Icons.sports_soccer_rounded;
+      case 'gps_fixed': return Icons.gps_fixed_rounded;
+      case 'favorite': return Icons.favorite_rounded;
+      case 'star': return Icons.star_rounded;
+      case 'cloud': return Icons.cloud_rounded;
+      case 'wifi': return Icons.wifi_rounded;
+      case 'bluetooth': return Icons.bluetooth_rounded;
+      case 'security': return Icons.security_rounded;
+      case 'vpn_key': return Icons.vpn_key_rounded;
+      case 'fingerprint': return Icons.fingerprint_rounded;
+      case 'shield': return Icons.shield_rounded;
+      case 'verified_user': return Icons.verified_user_rounded;
+      // Fallback for old emoji format
+      case '🏦': return Icons.account_balance_rounded;
+      case '🛒': return Icons.shopping_cart_rounded;
+      case '📧': return Icons.email_rounded;
+      case '📱': return Icons.phone_android_rounded;
+      case '💼': return Icons.work_rounded;
+      case '🎮': return Icons.sports_esports_rounded;
+      case '🎬': return Icons.movie_rounded;
+      case '✈️': return Icons.flight_rounded;
+      case '🎓': return Icons.school_rounded;
+      case '🏥': return Icons.local_hospital_rounded;
+      case '🍔': return Icons.restaurant_rounded;
+      case '🏠': return Icons.home_rounded;
+      case '🔒': return Icons.lock_rounded;
+      case '💳': return Icons.credit_card_rounded;
+      case '💻': return Icons.laptop_rounded;
+      case '🎵': return Icons.music_note_rounded;
+      case '📷': return Icons.camera_alt_rounded;
+      case '⚽': return Icons.sports_soccer_rounded;
+      case '❤️': return Icons.favorite_rounded;
+      case '🎯': return Icons.gps_fixed_rounded;
+      case '📁': return Icons.folder_rounded;
+      default: return Icons.folder_rounded;
+    }
+  }
+
 
 
   Color _parseColor(String colorString) {
@@ -513,50 +620,40 @@ class _AddPasswordPageState extends State<AddPasswordPage> {
     }
   }
 
-  // Modern Section Card Builder
+  // Modern Section Card Builder with Glassmorphism
   Widget _buildSectionCard({
     required String title,
     required List<Widget> children,
   }) {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Theme.of(context).colorScheme.surface,
-            Theme.of(context).colorScheme.surfaceVariant.withValues(alpha: 0.3),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.5),
-          width: 1,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.05),
-            blurRadius: 20,
-            offset: const Offset(0, 4),
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(24),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+        child: Container(
+          decoration: BoxDecoration(
+            color: AppColors.glassWhite,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: AppColors.glassBorder),
           ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              title,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: Theme.of(context).colorScheme.primary,
-                letterSpacing: 0.5,
-              ),
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.accentPink,
+                    letterSpacing: 0.5,
+                    fontSize: 16,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                ...children,
+              ],
             ),
-            const SizedBox(height: 20),
-            ...children,
-          ],
+          ),
         ),
       ),
     );
@@ -581,9 +678,9 @@ class _AddPasswordPageState extends State<AddPasswordPage> {
           padding: const EdgeInsets.only(left: 4, bottom: 10),
           child: Text(
             label,
-            style: Theme.of(context).textTheme.labelLarge?.copyWith(
+            style: TextStyle(
               fontWeight: FontWeight.w600,
-              color: Theme.of(context).colorScheme.onSurface,
+              color: AppColors.textSecondary,
               fontSize: 13,
               letterSpacing: 0.3,
             ),
@@ -597,11 +694,11 @@ class _AddPasswordPageState extends State<AddPasswordPage> {
           maxLines: maxLines,
           maxLength: maxLength,
           inputFormatters: inputFormatters,
-          style: Theme.of(context).textTheme.bodyLarge,
+          style: const TextStyle(color: Colors.white, fontSize: 16),
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: TextStyle(
-              color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+              color: AppColors.textTertiary,
             ),
             suffixIcon: suffixIcon,
             counterText: '',
@@ -610,33 +707,33 @@ class _AddPasswordPageState extends State<AddPasswordPage> {
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
               borderSide: BorderSide(
-                color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.3),
+                color: AppColors.glassBorder,
                 width: 1.5,
               ),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
               borderSide: BorderSide(
-                color: Theme.of(context).colorScheme.primary,
+                color: AppColors.accentPink,
                 width: 2,
               ),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
               borderSide: BorderSide(
-                color: Theme.of(context).colorScheme.error,
+                color: AppColors.error,
                 width: 1.5,
               ),
             ),
             focusedErrorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
               borderSide: BorderSide(
-                color: Theme.of(context).colorScheme.error,
+                color: AppColors.error,
                 width: 2,
               ),
             ),
             filled: true,
-            fillColor: Theme.of(context).colorScheme.surface,
+            fillColor: Colors.white.withValues(alpha: 0.05),
           ),
         ),
       ],

@@ -81,24 +81,15 @@ class _SplashPageState extends State<SplashPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              AppColors.primaryBlue,
-              AppColors.primaryBlueLight,
-              AppColors.accentLilac,
-            ],
-            stops: const [0.0, 0.5, 1.0],
-          ),
+        decoration: const BoxDecoration(
+          gradient: AppColors.backgroundGradient,
         ),
         child: SafeArea(
           child: Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // App Logo/Icon with gradient
+                // App Logo/Icon with glassmorphism effect
                 Container(
                   width: 120,
                   height: 120,
@@ -107,23 +98,31 @@ class _SplashPageState extends State<SplashPage> {
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                       colors: [
-                        AppColors.white,
-                        AppColors.grey50,
+                        Colors.white.withValues(alpha: 0.2),
+                        Colors.white.withValues(alpha: 0.1),
                       ],
                     ),
                     borderRadius: BorderRadius.circular(32),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.3),
+                      width: 1,
+                    ),
                     boxShadow: [
                       BoxShadow(
-                        color: AppColors.primaryBlueDark.withValues(alpha: 0.3),
-                        blurRadius: 20,
-                        offset: const Offset(0, 8),
+                        color: AppColors.fabGradientStart.withValues(alpha: 0.3),
+                        blurRadius: 30,
+                        offset: const Offset(0, 10),
                       ),
                     ],
                   ),
-                  child: const Icon(
-                    Icons.security,
-                    size: 64,
-                    color: AppColors.primaryBlue,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: Image.asset(
+                      'assets/icons/app_icon.png',
+                      width: 80,
+                      height: 80,
+                      fit: BoxFit.cover,
+                    ),
                   ),
                 ),
               
@@ -133,7 +132,7 @@ class _SplashPageState extends State<SplashPage> {
                 Text(
                   AppStrings.appName,
                   style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                    color: AppColors.white,
+                    color: Colors.white,
                     fontWeight: FontWeight.bold,
                     letterSpacing: 1.5,
                   ),
@@ -145,7 +144,7 @@ class _SplashPageState extends State<SplashPage> {
                 Text(
                   'secure_password_manager'.tr(),
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: AppColors.white.withValues(alpha: 0.9),
+                    color: Colors.white.withValues(alpha: 0.7),
                     fontWeight: FontWeight.w400,
                   ),
                   textAlign: TextAlign.center,
@@ -159,7 +158,7 @@ class _SplashPageState extends State<SplashPage> {
                   height: 32,
                   child: CircularProgressIndicator(
                     valueColor: AlwaysStoppedAnimation<Color>(
-                      AppColors.white.withValues(alpha: 0.8),
+                      Colors.white.withValues(alpha: 0.8),
                     ),
                     strokeWidth: 3,
                   ),

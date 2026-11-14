@@ -1,11 +1,11 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/services/database_service.dart';
 import '../../../../core/utils/encryption_service.dart';
-import '../../../../shared/widgets/custom_button.dart';
-import '../../../../shared/widgets/custom_text_field.dart';
+import '../../../../shared/widgets/gradient_scaffold.dart';
 import 'login_page.dart';
 
 class SetupPasswordPage extends StatefulWidget {
@@ -103,8 +103,7 @@ class _SetupPasswordPageState extends State<SetupPasswordPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      resizeToAvoidBottomInset: true,
+    return GradientScaffold(
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
@@ -121,144 +120,178 @@ class _SetupPasswordPageState extends State<SetupPasswordPage> {
                       key: _formKey,
                       child: Column(
                         children: [
-                const SizedBox(height: 32),
-                
-                // App Logo
-                Container(
-                  width: 100,
-                  height: 100,
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryBlue,
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.primaryBlue.withValues(alpha: 0.3),
-                        blurRadius: 20,
-                        offset: const Offset(0, 8),
-                      ),
-                    ],
-                  ),
-                  child: const Icon(
-                    Icons.security,
-                    size: 48,
-                    color: AppColors.white,
-                  ),
-                )
-                    .animate()
-                    .scale(duration: 500.ms, curve: Curves.elasticOut)
-                    .fadeIn(),
+                          const SizedBox(height: 32),
+                          
+                          // App Logo with glassmorphism
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(24),
+                            child: BackdropFilter(
+                              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                              child: Container(
+                                width: 100,
+                                height: 100,
+                                decoration: BoxDecoration(
+                                  gradient: AppColors.fabGradient,
+                                  borderRadius: BorderRadius.circular(24),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: AppColors.accentPink.withValues(alpha: 0.3),
+                                      blurRadius: 20,
+                                      offset: const Offset(0, 8),
+                                    ),
+                                  ],
+                                ),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Image.asset(
+                                    'assets/icons/app_icon.png',
+                                    width: 64,
+                                    height: 64,
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          )
+                              .animate()
+                              .scale(duration: 500.ms, curve: Curves.elasticOut)
+                              .fadeIn(),
 
-                const SizedBox(height: 32),
+                          const SizedBox(height: 32),
 
-                // Title
-                Text(
-                  'create_master_password'.tr(),
-                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.grey900,
-                  ),
-                  textAlign: TextAlign.center,
-                )
-                    .animate(delay: 200.ms)
-                    .fadeIn(duration: 400.ms)
-                    .slideY(begin: 0.3, end: 0),
+                          // Title
+                          Text(
+                            'create_master_password'.tr(),
+                            style: const TextStyle(
+                              fontSize: 28,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                            textAlign: TextAlign.center,
+                          )
+                              .animate(delay: 200.ms)
+                              .fadeIn(duration: 400.ms)
+                              .slideY(begin: 0.3, end: 0),
 
-                const SizedBox(height: 8),
+                          const SizedBox(height: 8),
 
-                Text(
-                  'create_strong_password_hint'.tr(),
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: AppColors.grey600,
-                  ),
-                  textAlign: TextAlign.center,
-                )
-                    .animate(delay: 300.ms)
-                    .fadeIn(duration: 400.ms)
-                    .slideY(begin: 0.3, end: 0),
+                          Text(
+                            'create_strong_password_hint'.tr(),
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: AppColors.textSecondary,
+                            ),
+                            textAlign: TextAlign.center,
+                          )
+                              .animate(delay: 300.ms)
+                              .fadeIn(duration: 400.ms)
+                              .slideY(begin: 0.3, end: 0),
 
-                const SizedBox(height: 48),
+                          const SizedBox(height: 48),
 
-                // Master Password Field
-                CustomTextField(
-                  controller: _passwordController,
-                  label: 'master_password'.tr(),
-                  hint: 'password_hint'.tr(),
-                  obscureText: _obscurePassword,
-                  prefixIcon: Icons.lock_outline,
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _obscurePassword ? Icons.visibility : Icons.visibility_off,
-                      color: AppColors.grey600,
-                    ),
-                    onPressed: () {
-                      setState(() => _obscurePassword = !_obscurePassword);
-                    },
-                  ),
-                  validator: _validatePassword,
-                )
-                    .animate(delay: 400.ms)
-                    .fadeIn(duration: 400.ms)
-                    .slideX(begin: -0.3, end: 0),
+                          // Master Password Field
+                          _buildPasswordField(
+                            controller: _passwordController,
+                            label: 'master_password'.tr(),
+                            hint: 'password_hint'.tr(),
+                            isVisible: !_obscurePassword,
+                            onVisibilityToggle: () {
+                              setState(() => _obscurePassword = !_obscurePassword);
+                            },
+                            validator: _validatePassword,
+                          )
+                              .animate(delay: 400.ms)
+                              .fadeIn(duration: 400.ms)
+                              .slideX(begin: -0.3, end: 0),
 
-                const SizedBox(height: 24),
+                          const SizedBox(height: 24),
 
-                // Confirm Password Field
-                CustomTextField(
-                  controller: _confirmPasswordController,
-                  label: 'confirm_master_password'.tr(),
-                  hint: 'confirm_password_hint'.tr(),
-                  obscureText: _obscureConfirmPassword,
-                  prefixIcon: Icons.lock_outline,
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _obscureConfirmPassword ? Icons.visibility : Icons.visibility_off,
-                      color: AppColors.grey600,
-                    ),
-                    onPressed: () {
-                      setState(() => _obscureConfirmPassword = !_obscureConfirmPassword);
-                    },
-                  ),
-                  validator: _validateConfirmPassword,
-                )
-                    .animate(delay: 500.ms)
-                    .fadeIn(duration: 400.ms)
-                    .slideX(begin: 0.3, end: 0),
+                          // Confirm Password Field
+                          _buildPasswordField(
+                            controller: _confirmPasswordController,
+                            label: 'confirm_master_password'.tr(),
+                            hint: 'confirm_password_hint'.tr(),
+                            isVisible: !_obscureConfirmPassword,
+                            onVisibilityToggle: () {
+                              setState(() => _obscureConfirmPassword = !_obscureConfirmPassword);
+                            },
+                            validator: _validateConfirmPassword,
+                          )
+                              .animate(delay: 500.ms)
+                              .fadeIn(duration: 400.ms)
+                              .slideX(begin: 0.3, end: 0),
 
-                const SizedBox(height: 32),
+                          const SizedBox(height: 32),
 
-                // Create Button
-                CustomButton(
-                  text: 'create_master_password'.tr(),
-                  onPressed: _isLoading ? null : _handleSetup,
-                  isLoading: _isLoading,
-                  width: double.infinity,
-                )
-                    .animate(delay: 600.ms)
-                    .fadeIn(duration: 400.ms)
-                    .slideY(begin: 0.3, end: 0),
+                          // Create Button
+                          Container(
+                            width: double.infinity,
+                            height: 56,
+                            decoration: BoxDecoration(
+                              gradient: AppColors.fabGradient,
+                              borderRadius: BorderRadius.circular(16),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppColors.accentPink.withValues(alpha: 0.3),
+                                  blurRadius: 12,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: ElevatedButton(
+                              onPressed: _isLoading ? null : _handleSetup,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.transparent,
+                                shadowColor: Colors.transparent,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                              ),
+                              child: _isLoading
+                                  ? const SizedBox(
+                                      height: 24,
+                                      width: 24,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2.5,
+                                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                      ),
+                                    )
+                                  : Text(
+                                      'create_master_password'.tr(),
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                            ),
+                          )
+                              .animate(delay: 600.ms)
+                              .fadeIn(duration: 400.ms)
+                              .slideY(begin: 0.3, end: 0),
 
-                const Spacer(),
+                          const Spacer(),
 
-                // Back to Login Link
-                TextButton(
-                  onPressed: () {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const LoginPage(),
-                      ),
-                    );
-                  },
-                  child: Text(
-                    'already_have_password_login'.tr(),
-                    style: TextStyle(
-                      color: AppColors.primaryBlue,
-                      decoration: TextDecoration.underline,
-                    ),
-                  ),
-                )
-                    .animate(delay: 700.ms)
-                    .fadeIn(duration: 400.ms),
+                          // Back to Login Link
+                          TextButton(
+                            onPressed: () {
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const LoginPage(),
+                                ),
+                              );
+                            },
+                            child: Text(
+                              'already_have_password_login'.tr(),
+                              style: TextStyle(
+                                color: AppColors.accentPink,
+                                decoration: TextDecoration.underline,
+                              ),
+                            ),
+                          )
+                              .animate(delay: 700.ms)
+                              .fadeIn(duration: 400.ms),
                         ],
                       ),
                     ),
@@ -269,6 +302,63 @@ class _SetupPasswordPageState extends State<SetupPasswordPage> {
           },
         ),
       ),
+    );
+  }
+
+  Widget _buildPasswordField({
+    required TextEditingController controller,
+    required String label,
+    required String hint,
+    required bool isVisible,
+    required VoidCallback onVisibilityToggle,
+    required String? Function(String?) validator,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            color: AppColors.textSecondary,
+            fontWeight: FontWeight.w500,
+            fontSize: 14,
+          ),
+        ),
+        const SizedBox(height: 8),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+            child: Container(
+              decoration: BoxDecoration(
+                color: AppColors.glassWhite,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppColors.glassBorder),
+              ),
+              child: TextFormField(
+                controller: controller,
+                obscureText: !isVisible,
+                validator: validator,
+                style: const TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  hintText: hint,
+                  hintStyle: TextStyle(color: AppColors.textTertiary),
+                  border: InputBorder.none,
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                  prefixIcon: Icon(Icons.lock_outline, color: AppColors.textSecondary),
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      isVisible ? Icons.visibility_off : Icons.visibility,
+                      color: AppColors.textSecondary,
+                    ),
+                    onPressed: onVisibilityToggle,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

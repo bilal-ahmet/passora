@@ -9,6 +9,65 @@ class StatisticsDialog extends StatelessWidget {
     required this.statistics,
   });
 
+  IconData _getIconData(String iconName) {
+    switch (iconName) {
+      case 'folder': return Icons.folder_rounded;
+      case 'lock': return Icons.lock_rounded;
+      case 'account_balance': return Icons.account_balance_rounded;
+      case 'shopping_cart': return Icons.shopping_cart_rounded;
+      case 'email': return Icons.email_rounded;
+      case 'work': return Icons.work_rounded;
+      case 'sports_esports': return Icons.sports_esports_rounded;
+      case 'movie': return Icons.movie_rounded;
+      case 'flight': return Icons.flight_rounded;
+      case 'school': return Icons.school_rounded;
+      case 'local_hospital': return Icons.local_hospital_rounded;
+      case 'restaurant': return Icons.restaurant_rounded;
+      case 'home': return Icons.home_rounded;
+      case 'credit_card': return Icons.credit_card_rounded;
+      case 'phone_android': return Icons.phone_android_rounded;
+      case 'laptop': return Icons.laptop_rounded;
+      case 'music_note': return Icons.music_note_rounded;
+      case 'camera_alt': return Icons.camera_alt_rounded;
+      case 'sports_soccer': return Icons.sports_soccer_rounded;
+      case 'gps_fixed': return Icons.gps_fixed_rounded;
+      case 'favorite': return Icons.favorite_rounded;
+      case 'star': return Icons.star_rounded;
+      case 'cloud': return Icons.cloud_rounded;
+      case 'wifi': return Icons.wifi_rounded;
+      case 'bluetooth': return Icons.bluetooth_rounded;
+      case 'security': return Icons.security_rounded;
+      case 'vpn_key': return Icons.vpn_key_rounded;
+      case 'fingerprint': return Icons.fingerprint_rounded;
+      case 'shield': return Icons.shield_rounded;
+      case 'verified_user': return Icons.verified_user_rounded;
+      // Fallback for old emoji format
+      case '🏦': return Icons.account_balance_rounded;
+      case '🛒': return Icons.shopping_cart_rounded;
+      case '📧': return Icons.email_rounded;
+      case '📱': return Icons.phone_android_rounded;
+      case '💼': return Icons.work_rounded;
+      case '🎮': return Icons.sports_esports_rounded;
+      case '🎬': return Icons.movie_rounded;
+      case '✈️': return Icons.flight_rounded;
+      case '🎓': return Icons.school_rounded;
+      case '🏥': return Icons.local_hospital_rounded;
+      case '🍔': return Icons.restaurant_rounded;
+      case '🏠': return Icons.home_rounded;
+      case '🔒': return Icons.lock_rounded;
+      case '💳': return Icons.credit_card_rounded;
+      case '💻': return Icons.laptop_rounded;
+      case '🎵': return Icons.music_note_rounded;
+      case '📷': return Icons.camera_alt_rounded;
+      case '⚽': return Icons.sports_soccer_rounded;
+      case '❤️': return Icons.favorite_rounded;
+      case '🎯': return Icons.gps_fixed_rounded;
+      case '📁': return Icons.folder_rounded;
+      case '📂': return Icons.folder_open_rounded;
+      default: return Icons.folder_rounded;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final totalCount = statistics['totalCount'] as int? ?? 0;
@@ -95,13 +154,25 @@ class StatisticsDialog extends StatelessWidget {
                     final count = cat['count'] as int? ?? 0;
                     if (count == 0) return const SizedBox.shrink();
                     
+                    final iconString = cat['categoryIcon'] as String? ?? 'folder';
+                    final categoryColor = _parseColor(cat['categoryColor'] as String? ?? '#999999');
+                    
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 12),
                       child: Row(
                         children: [
-                          Text(
-                            cat['categoryIcon'] as String? ?? '📁',
-                            style: const TextStyle(fontSize: 24),
+                          Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: categoryColor.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Icon(
+                              _getIconData(iconString),
+                              size: 22,
+                              color: categoryColor,
+                            ),
                           ),
                           const SizedBox(width: 12),
                           Expanded(
@@ -113,21 +184,21 @@ class StatisticsDialog extends StatelessWidget {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                             decoration: BoxDecoration(
-                              color: _parseColor(cat['categoryColor'] as String? ?? '#999999').withOpacity(0.15),
+                              color: categoryColor.withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(16),
                             ),
                             child: Text(
                               count.toString(),
                               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                                 fontWeight: FontWeight.bold,
-                                color: _parseColor(cat['categoryColor'] as String? ?? '#999999'),
+                                color: categoryColor,
                               ),
                             ),
                           ),
                         ],
                       ),
                     );
-                  }).toList(),
+                  }),
                   
                   // Uncategorized
                   if (uncategorizedCount > 0)
@@ -135,9 +206,18 @@ class StatisticsDialog extends StatelessWidget {
                       padding: const EdgeInsets.only(bottom: 12),
                       child: Row(
                         children: [
-                          const Text(
-                            '📂',
-                            style: TextStyle(fontSize: 24),
+                          Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: Colors.grey.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Icon(
+                              Icons.folder_open_rounded,
+                              size: 22,
+                              color: Colors.grey[600],
+                            ),
                           ),
                           const SizedBox(width: 12),
                           Expanded(
@@ -149,7 +229,7 @@ class StatisticsDialog extends StatelessWidget {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                             decoration: BoxDecoration(
-                              color: Colors.grey.withOpacity(0.15),
+                              color: Colors.grey.withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(16),
                             ),
                             child: Text(
@@ -183,7 +263,7 @@ class StatisticsDialog extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
